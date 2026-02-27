@@ -1,5 +1,7 @@
 # Triage — Budget Dashboard
 
+<img width="1046" height="867" alt="image" src="https://github.com/user-attachments/assets/38a45860-ab9a-480e-a053-e0807c827db3" />
+
 This small app tells you the difference between money you *have* and money that's already spoken for. **Triage** is a local-first, open-source budget dashboard that runs entirely on your machine — no subscriptions, no sending your financial data to someone else's server. Your data stays wherever you keep it. Run one Python script, get a single HTML file.
 
 Because it's just Python reading files, the data layer is 100% swappable. Point it at a database, wire up a Plaid fetch, pipe in a bank API etc. It's inspired by YNAB, Mint, Monarch, and other tools but it fills a gap I felt still existed. This is not an 'get out of debt' tool, it's not a pure backwards net worth log either, it's an action-oriented, active, rolling-forward intelligent budget methodology. A transparent, hackable tool for people who want to see exactly where their numbers come from.
@@ -151,6 +153,9 @@ VARIABLE_ENVELOPES = {"Groceries", "Restaurants & bars", "Gas & EV charging", ..
 
 ### Current month
 
+<img width="895" height="269" alt="image" src="https://github.com/user-attachments/assets/c2420a76-c116-4bde-aac8-2bd1e397db7b" />
+
+
 **Income bar** — tracks posted wages vs expected, flags other income (refunds, side deposits) separately with its own sparkline. Remaining income uses a ±$0.05 buffer to handle paycheck rounding. If a balance snapshot exists, shows Unassigned Cash — real bank balance minus all enveloped funds.
 
 **Operating Margin** — net surplus across all active envelopes (excluding health exclusions). The headline number for how your month is going.
@@ -158,6 +163,9 @@ VARIABLE_ENVELOPES = {"Groceries", "Restaurants & bars", "Gas & EV charging", ..
 **Deployed Capital** — total positive cash sitting in operational envelopes.
 
 **Needs Attention** — combined shortfall across all underfunded envelopes.
+
+<img width="887" height="778" alt="image" src="https://github.com/user-attachments/assets/a444c1ff-b5b1-40e6-b3a9-a84772e82cfd" />
+
 
 **Envelope table** — all envelopes grouped by primary category, showing budgeted, spent, and available. Click any row to expand a transaction ledger. Variable envelopes show a spend coverage bar and end-of-month projection based on current pace.
 
@@ -168,6 +176,9 @@ VARIABLE_ENVELOPES = {"Groceries", "Restaurants & bars", "Gas & EV charging", ..
 ---
 
 ### Planning mode (future months)
+
+<img width="871" height="160" alt="image" src="https://github.com/user-attachments/assets/920b234b-f477-4a48-9e41-69ea9ff943ab" />
+
 
 Navigate forward to any month that has entries in `budgets.csv` to enter planning mode.
 
@@ -189,9 +200,14 @@ This is the cash you'd expect to see sitting outside all envelopes at end of mon
 
 ### What-if mode
 
+<img width="138" height="61" alt="image" src="https://github.com/user-attachments/assets/e798f209-886c-4af0-8d4f-92600ab7a2f4" />
+
 Toggle **What-if** to simulate transfers without committing them. Queue moves between envelopes and see live updated balances. When you're happy, copy the queue as CSV to paste into `transfers.csv`.
 
 ### Smart Rebalance
+
+<img width="939" height="383" alt="image" src="https://github.com/user-attachments/assets/5ba56d6f-0c58-4c57-a9bb-c63ef16284a6" />
+
 
 One-click: finds all underfunded envelopes and automatically proposes transfers from envelopes with surplus to cover them, excluding recurring envelopes. Results go into the transfer queue for review.
 
