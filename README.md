@@ -6,10 +6,9 @@ A single-file, self-hosted envelope budgeting dashboard. Drop your transaction e
 
 ## How it works
 
-Triage is built around **envelope budgeting** — every dollar of income is assigned to a named category (envelope) at the start of the month. Spending draws down from that envelope. Rollovers carry forward automatically. You stay in control by moving money between envelopes when life doesn't go to plan.
+This small app tells you the difference between money you *have* and money that's already spoken for. **Triage** is a local-first, open-source budget dashboard that runs entirely on your machine — no subscriptions, no sending your financial data to someone else's server. Your data stays wherever you keep it. Run one Python script, get a single HTML file.
 
-The dashboard reads four CSV files, crunches the numbers in Python, and writes a fully self-contained HTML file you can open in any browser.
-
+Because it's just Python reading files, the data layer is 100% swappable. Point it at a database, wire up a Plaid fetch, pipe in a bank API etc. It's inspired by YNAB, Mint, Monarch, and other tools but it fills a gap I felt still existed. This is not an 'get out of debt' tool, it's not a pure backwards net worth log either, it's an action-oriented, active, rolling-forward intelligent budget methodology. A transparent, hackable tool for people who want to see exactly where their numbers come from.
 ---
 
 ## Quickstart
