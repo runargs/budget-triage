@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triage — Budget Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:        #18160f;
+            --bg2:       #1e1b13;
+            --surf:      #242017;
+            --surf2:     #2c2820;
+            --surf3:     #332f22;
+            --border:    #3a3526;
+            --border2:   #4a4436;
+            --text:      #ede5d0;
+            --text2:     #b8a98a;
+            --muted:     #7a6f5a;
+            --green:      #5a9466;  /* was #7aab82 */
+            --green-dim:  #3a6045;  /* was #4a7052 */
+            --green-soft: #5a944618; /* was #7aab8218 */
+            --sage:      #7aab82;
+            --sage-dim:  #4a7052;
+            --sage-soft: #7aab8218;
+            --rose:      #a07880;
+            --rose-dim:  #6e4e55;
+            --rose-soft: #a0787820;
+            --planning:  #3a4a5e;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Mono', monospace;
+            min-height: 100vh;
+            padding-bottom: 160px;
+        }
+
+        /* ── Layout ── */
+        .container { max-width: 980px; margin: 0 auto; padding: 48px 24px; }
+
+        /* ── Masthead ── */
+        .masthead {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+        .wordmark {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 13px;
+            font-weight: 300;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        .wordmark span { color: var(--green); }
+        .month-nav { display: flex; align-items: center; gap: 16px; }
+        .month-label {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            color: var(--text);
+            min-width: 90px;
+            text-align: center;
+        }
+        .nav-btn {
+            background: none;
+            border: 1px solid var(--border2);
+            color: var(--muted);
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.15s ease;
+        }
+        .nav-btn:hover { border-color: var(--green); color: var(--green); }
+
+        /* ── Planning badge ── */
+        .planning-badge {
+            display: none;
+            font-size: 9px;
+            letter-spacing: 2.5px;
+            color: #8cb4ff;
+            background: var(--planning);
+            border: 1px solid #4a5a6e;
+            padding: 4px 12px;
+            border-radius: 2px;
+            margin-bottom: 24px;
+        }
+        .disclaimer {
+            display: none;
+            font-size: 11px;
+            color: var(--muted);
+            font-style: italic;
+            background: var(--bg2);
+            padding: 12px 16px;
+            border-left: 2px solid var(--green-dim);
+            margin-bottom: 24px;
+        }
+
+        /* ── Triage summary ── */
+        .triage-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        /* Planning mode: small unassigned cash strip above main triage grid */
+        .planning-strip {
+            display: none;
+            background: var(--surf);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px 24px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        .planning-strip::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--green), transparent);
+        }
+        .planning-strip-inner {
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .planning-strip-label {
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        .planning-strip-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28px;
+            font-weight: 300;
+            line-height: 1;
+        }
+        .planning-strip-sub {
+            font-size: 10px;
+            color: var(--muted);
+            flex: 1;
+        }
+        .planning-strip-breakdown {
+            display: flex;
+            gap: 0;
+            flex: 1;
+            justify-content: flex-end;
+        }
+        .planning-strip-item {
+            padding: 0 16px;
+            border-right: 1px solid var(--border);
+            text-align: right;
+        }
+        .planning-strip-item:last-child { border-right: none; padding-right: 0; }
+        .planning-strip-item .psi-label { font-size: 9px; color: var(--muted); margin-bottom: 2px; }
+        .planning-strip-item .psi-val {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 15px;
+            font-weight: 300;
+        }
+        .triage-card {
+            background: var(--surf);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        .triage-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+        }
+        .triage-card.primary::before { background: linear-gradient(90deg, var(--green), transparent); }
+        .triage-card.card-holes::before  { background: linear-gradient(90deg, var(--rose-dim), transparent); }
+        .triage-card.card-excess::before { background: linear-gradient(90deg, var(--sage-dim), transparent); }
+
+        .card-label {
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 12px;
+        }
+        .card-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 42px;
+            font-weight: 300;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+        .card-value.cv-pos { color: var(--sage); }
+        .card-value.cv-neg { color: var(--rose); }
+        .card-value.cv-green { color: var(--green); }
+        .card-sub { font-size: 10px; color: var(--muted); line-height: 1.5; }
+        .decimal { font-size: 0.55em; opacity: 0.7; vertical-align: baseline; letter-spacing: 0; }
+        .card-value-md {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 30px;
+            font-weight: 300;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        /* ── Toolbar ── */
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .search-wrap { flex: 1; position: relative; }
+        .search-icon {
+            position: absolute;
+            left: 12px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: 14px;
+            pointer-events: none;
+        }
+        input[type="text"], input[type="number"], select {
+            background: var(--surf);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 10px 12px;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            border-radius: 4px;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            border-color: var(--green-dim);
+        }
+        .search-input { width: 100%; padding-left: 34px; }
+        ::placeholder { color: var(--muted); }
+
+        .export-btn {
+            background: none;
+            border: 1px solid var(--border2);
+            color: var(--text2);
+            padding: 10px 16px;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 1px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .export-btn:hover { border-color: var(--green-dim); color: var(--green); }
+
+        /* ── Table ── */
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            text-align: right;
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            padding: 0 16px 12px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 400;
+        }
+        thead th:first-child { text-align: left; }
+        thead th.th-spark { text-align: center; }
+
+        .group-header td {
+            background: var(--bg2);
+            font-size: 9px;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--text);
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cat-row td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+            text-align: right;
+        }
+        .cat-row td:first-child { text-align: left; }
+        .cat-row td.td-spark { text-align: center; }
+        .cat-row { transition: background 0.1s; }
+        .cat-row:hover td { background: var(--surf2); }
+
+        .cat-name {
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--text);
+            transition: color 0.12s;
+        }
+        .cat-name:hover { color: var(--green); }
+
+        /* Sparkline */
+        svg.spark { display: block; }
+
+        .amount-muted { font-size: 12px; color: var(--text2); }
+
+        /* ── Pills ── */
+        .pill {
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: 500;
+            min-width: 90px;
+            text-align: right;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+        .pill:hover { opacity: 0.75; }
+        .pill-pos  { background: var(--sage-soft);  color: var(--sage);  border: 1px solid var(--sage-dim); }
+        .pill-green { background: var(--green-soft);  color: var(--green);  border: 1px solid var(--green-dim); }
+        .pill-neg  { background: var(--rose-soft);  color: var(--rose);  border: 1px solid var(--rose-dim); }
+        .pill-zero { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+
+        /* ── Ledger ── */
+        .ledger-row-wrap { display: none; background: var(--bg); }
+        .ledger-inner { padding: 0 16px 16px; }
+        .ledger-header {
+            display: grid;
+            grid-template-columns: 90px 1.8fr 1fr 100px;
+            padding: 10px 0 8px;
+            font-size: 9px;
+            letter-spacing: 1.5px;
+            color: var(--muted);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 4px;
+        }
+        .ledger-header span:last-child { text-align: right; }
+        .ledger-item {
+            display: grid;
+            grid-template-columns: 90px 1.8fr 1fr 100px;
+            padding: 8px 0;
+            font-size: 11px;
+            color: var(--text2);
+            border-bottom: 1px solid var(--border);
+        }
+        .ledger-item span:last-child { text-align: right; }
+        .amt-pos { color: var(--sage); }
+        .amt-neg { color: var(--rose); }
+        .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 12px; }
+
+        /* ── Footer ── */
+        .footer {
+            position: fixed;
+            bottom: 0; left: 0;
+            width: 100%;
+            background: var(--surf);
+            border-top: 1px solid var(--border2);
+            z-index: 100;
+        }
+        .footer-inner { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+
+        .queue-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0 0;
+            cursor: pointer;
+            user-select: none;
+        }
+        .queue-title {
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .queue-count {
+            background: var(--green);
+            color: var(--bg);
+            font-size: 9px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 10px;
+            display: none;
+        }
+        .queue-toggle-hint { font-size: 9px; color: var(--muted); }
+
+        .transfer-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 10px 0 12px;
+            flex-wrap: wrap;
+        }
+        .tf-label { font-size: 9px; letter-spacing: 1.5px; color: var(--muted); white-space: nowrap; }
+        .transfer-form select { flex: 1.5; min-width: 130px; }
+        .transfer-form input[type="number"] { width: 100px; }
+        .transfer-form input[type="text"] { flex: 1; min-width: 120px; }
+
+        .add-btn {
+            background: var(--surf3);
+            border: 1px solid var(--border2);
+            color: var(--text2);
+            padding: 10px 18px;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 1px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .add-btn:hover { border-color: var(--green-dim); color: var(--green); }
+
+        .copy-all-btn {
+            background: var(--green);
+            border: none;
+            color: var(--bg);
+            padding: 10px 24px;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+        .copy-all-btn:hover { opacity: 0.85; }
+        .copy-all-btn:disabled { opacity: 0.35; cursor: default; }
+
+        .queue-list { display: none; padding-bottom: 12px; }
+        .queue-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 0;
+            font-size: 11px;
+            color: var(--text2);
+            border-bottom: 1px solid var(--border);
+        }
+        .queue-item-remove {
+            background: none; border: none;
+            color: var(--muted);
+            cursor: pointer; font-size: 14px;
+            padding: 0 4px; line-height: 1;
+            transition: color 0.12s;
+        }
+        .queue-item-remove:hover { color: var(--rose); }
+
+        /* ── Export modal ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10,8,5,0.85);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--surf);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            padding: 32px;
+            width: 560px;
+            max-width: 90vw;
+            position: relative;
+        }
+        .modal h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 24px;
+            font-weight: 400;
+            margin-bottom: 6px;
+        }
+        .modal-sub { font-size: 11px; color: var(--muted); margin-bottom: 20px; }
+        .modal-close {
+            position: absolute; top: 16px; right: 16px;
+            background: none; border: none;
+            color: var(--muted); font-size: 20px; cursor: pointer;
+            transition: color 0.12s;
+        }
+        .modal-close:hover { color: var(--text); }
+        .export-textarea {
+            width: 100%; height: 240px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text2);
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            padding: 14px;
+            border-radius: 4px;
+            resize: none; outline: none;
+            line-height: 1.6;
+        }
+        .modal-actions {
+            display: flex; gap: 10px;
+            margin-top: 16px; justify-content: flex-end;
+        }
+        .modal-copy-btn {
+            background: var(--green); border: none;
+            color: var(--bg);
+            padding: 10px 22px;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px; font-weight: 700; letter-spacing: 1px;
+            border-radius: 4px; cursor: pointer;
+            transition: opacity 0.15s;
+        }
+        .modal-copy-btn:hover { opacity: 0.85; }
+        .modal-cancel {
+            background: none;
+            border: 1px solid var(--border2);
+            color: var(--muted);
+            padding: 10px 18px;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px; border-radius: 4px; cursor: pointer;
+            transition: all 0.12s;
+        }
+        .modal-cancel:hover { color: var(--text); border-color: var(--text2); }
+
+        /* ── Utility ── */
+        .total-line {
+            text-align: right;
+            font-size: 10px;
+            color: var(--muted);
+            margin-bottom: 28px;
+            padding-top: 8px;
+        }
+        .total-line span { color: var(--text2); }
+
+        /* ── Sub-indicators under Available pill ── */
+        .avail-cell { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+        .sub-indicators { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+        .sub-ind {
+            font-size: 9px;
+            letter-spacing: 0.5px;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+        .sub-ind .ind-label { color: var(--muted); margin-right: 3px; }
+        .sub-ind .ind-val-pos  { color: var(--sage); }
+        .sub-ind .ind-val-neg  { color: var(--rose); }
+        .sub-ind .ind-val-zero { color: var(--muted); }
+        .sub-ind .ind-val-green { color: var(--green); }
+        /* ── Income bar ── */
+        .income-bar {
+            display: flex;
+            gap: 0;
+            align-items: stretch;
+            background: var(--surf);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 0;
+        }
+        .income-bar.future { display: none; }
+        .income-stat {
+            flex: 1;
+            min-width: 120px;
+            padding: 0 16px;
+            border-right: 1px solid var(--border);
+        }
+        .income-stat:first-child { padding-left: 0; }
+        .income-stat:last-child { border-right: none; }
+        .income-label {
+            font-size: 9px;
+            letter-spacing: 1.8px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 5px;
+        }
+        .income-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 20px;
+            font-weight: 300;
+            line-height: 1;
+        }
+        .income-sub {
+            font-size: 9px;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+        .progress-wrap {
+            width: 100%;
+            height: 2px;
+            background: var(--border);
+            border-radius: 1px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 1px;
+            transition: width 0.4s ease;
+        }
+
+        /* ── Planning mode unallocated breakdown ── */
+        .card-breakdown { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
+        .breakdown-row { display: flex; justify-content: space-between; align-items: center; font-size: 10px; }
+        .breakdown-label { color: var(--muted); }
+        .breakdown-val { font-family: 'DM Mono', monospace; font-size: 11px; }
+
+        /* ── What-if mode ── */
+        body.whatif-active { --border: #4a4a2e; }
+        .whatif-badge {
+            display: none;
+            font-size: 9px; letter-spacing: 2.5px;
+            color: var(--green); background: #2a2810;
+            border: 1px solid var(--green-dim);
+            padding: 4px 12px; border-radius: 2px;
+            margin-left: 8px;
+        }
+        body.whatif-active .whatif-badge { display: inline-block; }
+        .toolbar-btn {
+            background: none;
+            border: 1px solid var(--border2);
+            color: var(--text2);
+            padding: 10px 14px;
+            font-family: 'DM Mono', monospace;
+            font-size: 10px; letter-spacing: 1px;
+            border-radius: 4px; cursor: pointer;
+            transition: all 0.15s; white-space: nowrap;
+        }
+        .toolbar-btn:hover { border-color: var(--green-dim); color: var(--green); }
+        .toolbar-btn.active { background: #2a2810; border-color: var(--green-dim); color: var(--green); }
+
+        /* ── Uncategorized notice ── */
+        .uncat-line {
+            font-size: 10px; color: var(--muted);
+            margin-bottom: 6px; padding-top: 4px;
+            cursor: pointer; display: none;
+        }
+        .uncat-line:hover { color: var(--text2); }
+        .uncat-line span { color: var(--text2); }
+        .uncat-detail {
+            display: none;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 10px 16px;
+            margin-bottom: 16px;
+            font-size: 10px;
+        }
+        .uncat-row {
+            display: flex; justify-content: space-between;
+            padding: 4px 0; border-bottom: 1px solid var(--border);
+            color: var(--text2);
+        }
+        .uncat-row:last-child { border-bottom: none; }
+        .uncat-row .uncat-cat { color: var(--muted); }
+
+        /* ── Coverage indicator ── */
+        .coverage-bar {
+            width: 56px; height: 4px;
+            background: var(--border);
+            border-radius: 2px; overflow: hidden;
+            margin: 4px 0 2px auto;
+        }
+        .coverage-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+        .coverage-label { font-size: 9px; color: var(--muted); text-align: right; }
+
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to   { opacity: 1; transform: none; }
+        }
+        .cat-row { animation: fadeSlideIn 0.2s ease both; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="masthead">
+        <div class="wordmark"><span>Triage</span> &nbsp;·&nbsp; Budget Dashboard</div>
+        <div class="month-nav">
+            <button class="nav-btn" onclick="changeMonth(-1)">&#8249;</button>
+            <div class="month-label" id="monthLabel"></div>
+            <button class="nav-btn" onclick="changeMonth(1)">&#8250;</button>
+        </div>
+    </div>
+
+    <div class="planning-badge" id="planningBadge">PLANNING MODE</div>
+    <div class="disclaimer" id="disclaimer">
+        <strong>Planning Mode:</strong> Projected Surplus excludes new seed funding — showing only surplus rolling forward from today.
+    </div>
+
+    <div id="incomeBar"></div>
+    <div class="planning-strip" id="planningStrip"></div>
+    <div class="triage-grid" id="triageHeader"></div>
+
+    <div class="toolbar">
+        <div class="search-wrap">
+            <span class="search-icon">&#9906;</span>
+            <input type="text" class="search-input" id="search" placeholder="Search envelopes…" oninput="render()">
+        </div>
+        <button class="toolbar-btn" id="underfundedBtn" onclick="toggleSort()">Underfunded First</button>
+        <button class="toolbar-btn" id="whatifBtn" onclick="toggleWhatif()">What-if <span class="whatif-badge" id="whatifBadge">ON</span></button>
+        <button class="toolbar-btn" id="smartBtn" onclick="smartRebalance()">Smart Rebalance</button>
+        <button class="export-btn" onclick="openExport()">Export CSV</button>
+    </div>
+
+    <div class="uncat-line" id="uncatLine" onclick="toggleUncatDetail()"></div>
+    <div class="uncat-detail" id="uncatDetail"></div>
+
+    <div id="tableBody"></div>
+    <div class="total-line" id="totalLine"></div>
+</div>
+
+<!-- Footer transfer panel -->
+<div class="footer">
+    <div class="footer-inner">
+        <div class="queue-header" onclick="toggleQueue()">
+            <div class="queue-title">
+                TRANSFERS
+                <span class="queue-count" id="queueCount">0</span>
+            </div>
+            <div class="queue-toggle-hint" id="queueHint">&#9650; show queue</div>
+        </div>
+        <div class="transfer-form">
+            <span class="tf-label">FROM</span>
+            <select id="fromCat"><option value="">Select envelope</option></select>
+            <span class="tf-label">TO</span>
+            <select id="toCat"><option value="">Select envelope</option></select>
+            <input type="number" id="amt" placeholder="0.00" step="0.01" min="0">
+            <input type="text" id="note" placeholder="Reason…">
+            <button class="add-btn" onclick="addToQueue()">+ Queue</button>
+            <button class="copy-all-btn" id="copyAllBtn" onclick="copyQueue()" disabled>Copy All</button>
+        </div>
+        <div class="queue-list" id="queueList"></div>
+    </div>
+</div>
+
+<!-- Export modal -->
+<div class="modal-overlay" id="exportModal">
+    <div class="modal">
+        <button class="modal-close" onclick="closeExport()">&#215;</button>
+        <h2>Export Month</h2>
+        <div class="modal-sub">CSV snapshot for <span id="exportMonthLabel"></span> — copy and paste into your spreadsheet.</div>
+        <textarea class="export-textarea" id="exportText" readonly></textarea>
+        <div class="modal-actions">
+            <button class="modal-cancel" onclick="closeExport()">Cancel</button>
+            <button class="modal-copy-btn" id="modalCopyBtn" onclick="copyExport()">Copy to Clipboard</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const DB = {"months": ["2025-11", "2025-12", "2026-01", "2026-02", "2026-03"], "current_month": "2026-02", "data_by_month": {"2025-11": {"summary": {"bank": 5010.68, "last_snapshot": 4820.0, "last_snapshot_month": "2025-11", "txns_since_snapshot": 190.68, "rollover_into_month": 0, "excess": 317.27, "holes": 0, "net_health": 317.27, "new_funding": 4390.0, "total_enveloped": 517.28, "posted_income": 5245.0, "other_income": 18.4, "expected_income": 5245.0, "snapshot_balance": 4820.0, "uncategorized_spend": 0.0, "uncategorized_cats": {}}, "categories": {"Bills": [{"name": "Auto insurance", "budgeted": 142.0, "spent": 142.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-11-01", "desc": "Progressive AutoPay", "amt": -142.0, "note": ""}]}, {"name": "Phone & internet", "budgeted": 95.0, "spent": 95.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-11-02", "desc": "T-Mobile AutoPay", "amt": -95.0, "note": ""}]}, {"name": "Student loan payments", "budgeted": 380.0, "spent": 380.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-11-10", "desc": "FedLoan Servicing", "amt": -380.0, "note": ""}]}], "General": [{"name": "Car services", "budgeted": 0.0, "spent": 0.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": []}, {"name": "Emergency fund", "budgeted": 200.0, "spent": 0.0, "available": 200.0, "prev_available": 200.0, "is_recurring": true, "is_variable": false, "ledger": []}, {"name": "Home insurance", "budgeted": 0.0, "spent": 0.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": []}], "Shopping": [{"name": "Clothing & accessories", "budgeted": 150.0, "spent": 144.35, "available": 5.65, "prev_available": 5.65, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2025-11-16", "desc": "Zara", "amt": -89.95, "note": ""}, {"date": "2025-11-29", "desc": "ASOS", "amt": -54.4, "note": ""}]}, {"name": "Retail", "budgeted": 100.0, "spent": 63.13, "available": 36.87, "prev_available": 36.87, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2025-11-11", "desc": "Amazon", "amt": -34.99, "note": ""}, {"date": "2025-11-23", "desc": "Target", "amt": -28.14, "note": ""}]}], "Food": [{"name": "Coffee shops", "budgeted": 60.0, "spent": 43.55, "available": 16.45, "prev_available": 16.45, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2025-11-04", "desc": "Starbucks", "amt": -6.85, "note": ""}, {"date": "2025-11-07", "desc": "Blue Bottle Coffee", "amt": -7.4, "note": ""}, {"date": "2025-11-11", "desc": "Starbucks", "amt": -6.85, "note": ""}, {"date": "2025-11-14", "desc": "Equator Coffees", "amt": -8.2, "note": ""}, {"date": "2025-11-18", "desc": "Starbucks", "amt": -6.85, "note": ""}, {"date": "2025-11-25", "desc": "Blue Bottle Coffee", "amt": -7.4, "note": ""}]}, {"name": "Groceries", "budgeted": 350.0, "spent": 276.74, "available": 73.26, "prev_available": 73.26, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2025-11", "desc": "From Restaurants & bars", "amt": 30.0, "note": "underspent dining moved to groceries"}, {"date": "2025-11-05", "desc": "Trader Joe's", "amt": -62.18, "note": ""}, {"date": "2025-11-10", "desc": "Whole Foods Market", "amt": -88.43, "note": ""}, {"date": "2025-11-17", "desc": "Trader Joe's", "amt": -71.22, "note": ""}, {"date": "2025-11-24", "desc": "Target - Grocery", "amt": -54.91, "note": ""}]}, {"name": "Other food & drink", "budgeted": 40.0, "spent": 38.2, "available": 1.8, "prev_available": 1.8, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2025-11-14", "desc": "Vitamins - iHerb", "amt": -38.2, "note": ""}]}, {"name": "Restaurants & bars", "budgeted": 250.0, "spent": 207.52, "available": 42.48, "prev_available": 42.48, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2025-11", "desc": "To Groceries", "amt": -30.0, "note": "underspent dining moved to groceries"}, {"date": "2025-11-06", "desc": "Chipotle", "amt": -13.47, "note": ""}, {"date": "2025-11-08", "desc": "The Well Bar & Grill", "amt": -48.2, "note": ""}, {"date": "2025-11-13", "desc": "Sweetgreen", "amt": -16.8, "note": ""}, {"date": "2025-11-19", "desc": "Uber Eats", "amt": -32.15, "note": ""}, {"date": "2025-11-22", "desc": "Nobu - birthday dinner", "amt": -74.5, "note": ""}, {"date": "2025-11-28", "desc": "Pizza Hut", "amt": -22.4, "note": ""}]}], "Entertainment": [{"name": "Events & recreation", "budgeted": 120.0, "spent": 53.5, "available": 66.5, "prev_available": 66.5, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2025-11-15", "desc": "Eventbrite - Comedy Show", "amt": -35.0, "note": ""}, {"date": "2025-11-27", "desc": "AMC Theaters", "amt": -18.5, "note": ""}]}, {"name": "Games", "budgeted": 15.0, "spent": 14.99, "available": 0.01, "prev_available": 0.01, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-11-20", "desc": "Steam Purchase", "amt": -14.99, "note": ""}]}, {"name": "Music & audio", "budgeted": 18.0, "spent": 10.99, "available": 7.01, "prev_available": 7.01, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-11-01", "desc": "Spotify Premium", "amt": -10.99, "note": ""}]}, {"name": "Other entertainment", "budgeted": 60.0, "spent": 31.48, "available": 28.52, "prev_available": 28.52, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-11-03", "desc": "Netflix", "amt": -15.49, "note": ""}, {"date": "2025-11-10", "desc": "HBO Max", "amt": -15.99, "note": ""}]}], "Health": [{"name": "Fitness", "budgeted": 55.0, "spent": 53.99, "available": 1.01, "prev_available": 1.01, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-11-01", "desc": "Planet Fitness", "amt": -24.99, "note": ""}, {"date": "2025-11-08", "desc": "ClassPass", "amt": -29.0, "note": ""}]}, {"name": "Medical", "budgeted": 50.0, "spent": 18.4, "available": 31.6, "prev_available": 31.6, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-11-20", "desc": "CVS Pharmacy", "amt": -18.4, "note": ""}]}], "Auto": [{"name": "Gas & EV charging", "budgeted": 85.0, "spent": 83.0, "available": 2.0, "prev_available": 2.0, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2025-11-09", "desc": "Shell Gas Station", "amt": -48.2, "note": ""}, {"date": "2025-11-21", "desc": "Chevron", "amt": -34.8, "note": ""}]}], "Transfers": [{"name": "Investment transfers", "budgeted": 400.0, "spent": 400.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-11-15", "desc": "Fidelity Transfer", "amt": -400.0, "note": ""}]}], "Travel": [{"name": "Other travel", "budgeted": 0.0, "spent": 0.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": []}], "Personal": [{"name": "Personal care", "budgeted": 80.0, "spent": 79.3, "available": 0.7, "prev_available": 0.7, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2025-11-12", "desc": "Ulta Beauty", "amt": -54.3, "note": ""}, {"date": "2025-11-22", "desc": "Drybar", "amt": -25.0, "note": ""}]}, {"name": "Pet supplies", "budgeted": 90.0, "spent": 86.58, "available": 3.42, "prev_available": 3.42, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2025-11-08", "desc": "Chewy.com", "amt": -64.18, "note": ""}, {"date": "2025-11-19", "desc": "Petco", "amt": -22.4, "note": ""}]}], "Housing": [{"name": "Rent", "budgeted": 1650.0, "spent": 1650.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-11-01", "desc": "ACH - Oakwood Properties", "amt": -1650.0, "note": ""}]}]}, "is_future": false}, "2025-12": {"summary": {"bank": 4145.57, "last_snapshot": 5210.0, "last_snapshot_month": "2025-12", "txns_since_snapshot": -1064.43, "rollover_into_month": 517.28, "excess": 388.68, "holes": 84.83, "net_health": 303.85, "new_funding": 5030.0, "total_enveloped": 595.85, "posted_income": 5245.0, "other_income": 42.0, "expected_income": 5245.0, "snapshot_balance": 5210.0, "uncategorized_spend": 0.0, "uncategorized_cats": {}}, "categories": {"Bills": [{"name": "Auto insurance", "budgeted": 142.0, "spent": 142.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-12-01", "desc": "Progressive AutoPay", "amt": -142.0, "note": ""}]}, {"name": "Phone & internet", "budgeted": 95.0, "spent": 95.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-12-02", "desc": "T-Mobile AutoPay", "amt": -95.0, "note": ""}]}, {"name": "Student loan payments", "budgeted": 380.0, "spent": 380.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-12-10", "desc": "FedLoan Servicing", "amt": -380.0, "note": ""}]}], "General": [{"name": "Car services", "budgeted": 0.0, "spent": 0.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": []}, {"name": "Emergency fund", "budgeted": 280.0, "spent": 0.0, "available": 280.0, "prev_available": 280.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-12", "desc": "To Other travel", "amt": -120.0, "note": "holiday trip top-up"}]}, {"name": "Home insurance", "budgeted": 0.0, "spent": 0.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": []}], "Shopping": [{"name": "Clothing & accessories", "budgeted": 305.65, "spent": 306.25, "available": -0.6, "prev_available": -0.6, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2025-12", "desc": "From Retail", "amt": 50.0, "note": "moved for holiday shopping"}, {"date": "2025-12-06", "desc": "Nordstrom", "amt": -142.8, "note": ""}, {"date": "2025-12-13", "desc": "ASOS", "amt": -68.5, "note": ""}, {"date": "2025-12-21", "desc": "Zara - holiday outfit", "amt": -94.95, "note": ""}]}, {"name": "Retail", "budgeted": 186.87, "spent": 254.8, "available": -67.93, "prev_available": -67.93, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2025-12", "desc": "To Clothing & accessories", "amt": -50.0, "note": "moved for holiday shopping"}, {"date": "2025-12-08", "desc": "Amazon - gifts", "amt": -122.48, "note": ""}, {"date": "2025-12-15", "desc": "Target - gifts", "amt": -88.32, "note": ""}, {"date": "2025-12-20", "desc": "Etsy - gift", "amt": -44.0, "note": ""}]}], "Food": [{"name": "Coffee shops", "budgeted": 76.45, "spent": 29.7, "available": 46.75, "prev_available": 46.75, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2025-12-02", "desc": "Starbucks", "amt": -6.85, "note": ""}, {"date": "2025-12-09", "desc": "Blue Bottle Coffee", "amt": -7.4, "note": ""}, {"date": "2025-12-16", "desc": "Starbucks", "amt": -6.85, "note": ""}, {"date": "2025-12-23", "desc": "Philz Coffee", "amt": -8.6, "note": ""}]}, {"name": "Groceries", "budgeted": 393.26, "spent": 313.09, "available": 80.17, "prev_available": 80.17, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2025-12-03", "desc": "Trader Joe's", "amt": -74.18, "note": ""}, {"date": "2025-12-10", "desc": "Whole Foods Market", "amt": -92.44, "note": ""}, {"date": "2025-12-17", "desc": "Trader Joe's", "amt": -58.32, "note": ""}, {"date": "2025-12-23", "desc": "Safeway - Holiday items", "amt": -88.15, "note": ""}]}, {"name": "Other food & drink", "budgeted": 41.8, "spent": 38.2, "available": 3.6, "prev_available": 3.6, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2025-12-10", "desc": "iHerb vitamins", "amt": -38.2, "note": ""}]}, {"name": "Restaurants & bars", "budgeted": 342.48, "spent": 330.05, "available": 12.43, "prev_available": 12.43, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2025-12-05", "desc": "Cheesecake Factory", "amt": -62.4, "note": ""}, {"date": "2025-12-07", "desc": "Sweetgreen", "amt": -16.8, "note": ""}, {"date": "2025-12-12", "desc": "The Well Bar & Grill", "amt": -55.2, "note": ""}, {"date": "2025-12-14", "desc": "Uber Eats", "amt": -28.45, "note": ""}, {"date": "2025-12-20", "desc": "Holiday party venue split", "amt": -45.0, "note": ""}, {"date": "2025-12-26", "desc": "Postmates", "amt": -34.2, "note": ""}, {"date": "2025-12-30", "desc": "New Year's Eve dinner", "amt": -88.0, "note": ""}]}], "Entertainment": [{"name": "Events & recreation", "budgeted": 246.5, "spent": 141.5, "available": 105.0, "prev_available": 105.0, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2025-12-06", "desc": "Nutcracker Ballet tickets", "amt": -95.0, "note": ""}, {"date": "2025-12-13", "desc": "AMC Theaters", "amt": -18.5, "note": ""}, {"date": "2025-12-22", "desc": "Holiday ice skating", "amt": -28.0, "note": ""}]}, {"name": "Games", "budgeted": 15.01, "spent": 14.99, "available": 0.02, "prev_available": 0.02, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-12-26", "desc": "Steam - holiday sale", "amt": -14.99, "note": ""}]}, {"name": "Music & audio", "budgeted": 25.01, "spent": 10.99, "available": 14.02, "prev_available": 14.02, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-12-01", "desc": "Spotify Premium", "amt": -10.99, "note": ""}]}, {"name": "Other entertainment", "budgeted": 108.52, "spent": 45.47, "available": 63.05, "prev_available": 63.05, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-12-03", "desc": "Netflix", "amt": -15.49, "note": ""}, {"date": "2025-12-10", "desc": "HBO Max", "amt": -15.99, "note": ""}, {"date": "2025-12-18", "desc": "Disney+", "amt": -13.99, "note": ""}]}], "Health": [{"name": "Fitness", "budgeted": 56.01, "spent": 53.99, "available": 2.02, "prev_available": 2.02, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-12-01", "desc": "Planet Fitness", "amt": -24.99, "note": ""}, {"date": "2025-12-08", "desc": "ClassPass", "amt": -29.0, "note": ""}]}, {"name": "Medical", "budgeted": 81.6, "spent": 22.8, "available": 58.8, "prev_available": 58.8, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-12-15", "desc": "Walgreens Pharmacy", "amt": -22.8, "note": ""}]}], "Auto": [{"name": "Gas & EV charging", "budgeted": 87.0, "spent": 90.6, "available": -3.6, "prev_available": -3.6, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2025-12-06", "desc": "Shell Gas Station", "amt": -52.4, "note": ""}, {"date": "2025-12-19", "desc": "Chevron", "amt": -38.2, "note": ""}]}], "Transfers": [{"name": "Investment transfers", "budgeted": 400.0, "spent": 400.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-12-15", "desc": "Fidelity Transfer", "amt": -400.0, "note": ""}]}], "Travel": [{"name": "Other travel", "budgeted": 440.0, "spent": 428.0, "available": 12.0, "prev_available": 12.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-12", "desc": "From Emergency fund", "amt": 120.0, "note": "holiday trip top-up"}, {"date": "2025-12-22", "desc": "Southwest Airlines", "amt": -248.0, "note": ""}, {"date": "2025-12-23", "desc": "Airbnb - family stay", "amt": -180.0, "note": ""}]}], "Personal": [{"name": "Personal care", "budgeted": 100.7, "spent": 113.4, "available": -12.7, "prev_available": -12.7, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2025-12-05", "desc": "Sephora", "amt": -78.4, "note": ""}, {"date": "2025-12-18", "desc": "Drybar - Holiday blowout", "amt": -35.0, "note": ""}]}, {"name": "Pet supplies", "budgeted": 93.42, "spent": 90.6, "available": 2.82, "prev_available": 2.82, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2025-12-07", "desc": "Chewy.com", "amt": -72.4, "note": ""}, {"date": "2025-12-18", "desc": "Petco - holiday treat", "amt": -18.2, "note": ""}]}], "Housing": [{"name": "Rent", "budgeted": 1650.0, "spent": 1650.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2025-12-01", "desc": "ACH - Oakwood Properties", "amt": -1650.0, "note": ""}]}]}, "is_future": false}, "2026-01": {"summary": {"bank": 6063.3, "last_snapshot": 5640.0, "last_snapshot_month": "2026-01", "txns_since_snapshot": 423.3, "rollover_into_month": 595.85, "excess": 643.54, "holes": 231.39, "net_health": 412.15, "new_funding": 4410.0, "total_enveloped": 904.15, "posted_income": 5245.0, "other_income": 380.0, "expected_income": 5245.0, "snapshot_balance": 5640.0, "uncategorized_spend": 0.0, "uncategorized_cats": {}}, "categories": {"Bills": [{"name": "Auto insurance", "budgeted": 142.0, "spent": 142.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2026-01-01", "desc": "Progressive AutoPay", "amt": -142.0, "note": ""}]}, {"name": "Phone & internet", "budgeted": 95.0, "spent": 95.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2026-01-02", "desc": "T-Mobile AutoPay", "amt": -95.0, "note": ""}]}, {"name": "Student loan payments", "budgeted": 380.0, "spent": 380.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2026-01-10", "desc": "FedLoan Servicing", "amt": -380.0, "note": ""}]}], "General": [{"name": "Car services", "budgeted": 0.0, "spent": 0.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": []}, {"name": "Emergency fund", "budgeted": 480.0, "spent": 0.0, "available": 480.0, "prev_available": 480.0, "is_recurring": true, "is_variable": false, "ledger": []}, {"name": "Home insurance", "budgeted": 0.0, "spent": 0.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": []}], "Shopping": [{"name": "Clothing & accessories", "budgeted": 99.4, "spent": 62.4, "available": 37.0, "prev_available": 37.0, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2026-01-17", "desc": "ASOS - sale", "amt": -62.4, "note": ""}]}, {"name": "Retail", "budgeted": 12.07, "spent": 76.98, "available": -64.91, "prev_available": -64.91, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2026-01-09", "desc": "Amazon", "amt": -44.18, "note": ""}, {"date": "2026-01-20", "desc": "Target", "amt": -32.8, "note": ""}]}], "Food": [{"name": "Coffee shops", "budgeted": 106.75, "spent": 43.55, "available": 63.2, "prev_available": 63.2, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2026-01-05", "desc": "Starbucks", "amt": -6.85, "note": ""}, {"date": "2026-01-08", "desc": "Blue Bottle Coffee", "amt": -7.4, "note": ""}, {"date": "2026-01-13", "desc": "Starbucks", "amt": -6.85, "note": ""}, {"date": "2026-01-19", "desc": "Equator Coffees", "amt": -8.2, "note": ""}, {"date": "2026-01-24", "desc": "Starbucks", "amt": -6.85, "note": ""}, {"date": "2026-01-29", "desc": "Blue Bottle Coffee", "amt": -7.4, "note": ""}]}, {"name": "Groceries", "budgeted": 400.17, "spent": 283.85, "available": 116.32, "prev_available": 116.32, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2026-01-04", "desc": "Trader Joe's", "amt": -68.22, "note": ""}, {"date": "2026-01-11", "desc": "Whole Foods Market", "amt": -82.18, "note": ""}, {"date": "2026-01-18", "desc": "Trader Joe's", "amt": -74.55, "note": ""}, {"date": "2026-01-25", "desc": "Safeway", "amt": -58.9, "note": ""}]}, {"name": "Other food & drink", "budgeted": 43.6, "spent": 38.2, "available": 5.4, "prev_available": 5.4, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2026-01-13", "desc": "iHerb vitamins", "amt": -38.2, "note": ""}]}, {"name": "Restaurants & bars", "budgeted": 192.43, "spent": 159.77, "available": 32.66, "prev_available": 32.66, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2026-01", "desc": "To Medical", "amt": -60.0, "note": "january health rebalance"}, {"date": "2026-01-06", "desc": "Chipotle", "amt": -13.47, "note": ""}, {"date": "2026-01-10", "desc": "Sweetgreen", "amt": -16.8, "note": ""}, {"date": "2026-01-15", "desc": "The Well Bar & Grill", "amt": -42.2, "note": ""}, {"date": "2026-01-20", "desc": "Uber Eats", "amt": -28.9, "note": ""}, {"date": "2026-01-26", "desc": "Nobu", "amt": -58.4, "note": ""}]}], "Entertainment": [{"name": "Events & recreation", "budgeted": 205.0, "spent": 63.5, "available": 141.5, "prev_available": 141.5, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2026-01-14", "desc": "Comedy show tickets", "amt": -45.0, "note": ""}, {"date": "2026-01-24", "desc": "AMC Theaters", "amt": -18.5, "note": ""}]}, {"name": "Games", "budgeted": 15.02, "spent": 14.99, "available": 0.03, "prev_available": 0.03, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2026-01-15", "desc": "Nintendo eShop", "amt": -14.99, "note": ""}]}, {"name": "Music & audio", "budgeted": 32.02, "spent": 10.99, "available": 21.03, "prev_available": 21.03, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2026-01-01", "desc": "Spotify Premium", "amt": -10.99, "note": ""}]}, {"name": "Other entertainment", "budgeted": 123.05, "spent": 31.48, "available": 91.57, "prev_available": 91.57, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2026-01-03", "desc": "Netflix", "amt": -15.49, "note": ""}, {"date": "2026-01-10", "desc": "HBO Max", "amt": -15.99, "note": ""}]}], "Health": [{"name": "Fitness", "budgeted": 57.02, "spent": 53.99, "available": 3.03, "prev_available": 3.03, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2026-01-01", "desc": "Planet Fitness", "amt": -24.99, "note": ""}, {"date": "2026-01-08", "desc": "ClassPass", "amt": -29.0, "note": ""}]}, {"name": "Medical", "budgeted": 318.8, "spent": 187.4, "available": 131.4, "prev_available": 131.4, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2026-01", "desc": "From Restaurants & bars", "amt": 60.0, "note": "january health rebalance"}, {"date": "2026-01-12", "desc": "Dr. Chen - copay", "amt": -40.0, "note": ""}, {"date": "2026-01-18", "desc": "CVS Pharmacy", "amt": -62.4, "note": ""}, {"date": "2026-01-22", "desc": "LabCorp - bloodwork", "amt": -85.0, "note": ""}]}], "Auto": [{"name": "Gas & EV charging", "budgeted": 81.4, "spent": 81.0, "available": 0.4, "prev_available": 0.4, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2026-01-07", "desc": "Shell Gas Station", "amt": -44.8, "note": ""}, {"date": "2026-01-21", "desc": "Chevron", "amt": -36.2, "note": ""}]}], "Transfers": [{"name": "Investment transfers", "budgeted": 400.0, "spent": 400.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2026-01-15", "desc": "Fidelity Transfer", "amt": -400.0, "note": ""}]}], "Travel": [{"name": "Other travel", "budgeted": 12.0, "spent": 0.0, "available": 12.0, "prev_available": 12.0, "is_recurring": true, "is_variable": false, "ledger": []}], "Personal": [{"name": "Personal care", "budgeted": 67.3, "spent": 73.2, "available": -5.9, "prev_available": -5.9, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2026-01-10", "desc": "Ulta Beauty", "amt": -48.2, "note": ""}, {"date": "2026-01-24", "desc": "Drybar", "amt": -25.0, "note": ""}]}, {"name": "Pet supplies", "budgeted": 92.82, "spent": 253.4, "available": -160.58, "prev_available": -160.58, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2026-01-06", "desc": "Chewy.com", "amt": -68.4, "note": ""}, {"date": "2026-01-20", "desc": "Vet visit - wellness", "amt": -185.0, "note": ""}]}], "Housing": [{"name": "Rent", "budgeted": 1650.0, "spent": 1650.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2026-01-01", "desc": "ACH - Oakwood Properties", "amt": -1650.0, "note": ""}]}]}, "is_future": false}, "2026-02": {"summary": {"bank": 6667.7, "last_snapshot": 5980.0, "last_snapshot_month": "2026-02", "txns_since_snapshot": 687.7, "rollover_into_month": 904.15, "excess": 1056.54, "holes": 156.66, "net_health": 899.88, "new_funding": 4320.0, "total_enveloped": 1591.88, "posted_income": 5244.97, "other_income": 55.0, "expected_income": 5245.0, "snapshot_balance": 5980.0, "uncategorized_spend": 0.0, "uncategorized_cats": {}}, "categories": {"Bills": [{"name": "Auto insurance", "budgeted": 142.0, "spent": 142.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2026-02-01", "desc": "Progressive AutoPay", "amt": -142.0, "note": ""}]}, {"name": "Phone & internet", "budgeted": 95.0, "spent": 95.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2026-02-02", "desc": "T-Mobile AutoPay", "amt": -95.0, "note": ""}]}, {"name": "Student loan payments", "budgeted": 380.0, "spent": 380.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2026-02-10", "desc": "FedLoan Servicing", "amt": -380.0, "note": ""}]}], "General": [{"name": "Car services", "budgeted": 0.0, "spent": 0.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": []}, {"name": "Emergency fund", "budgeted": 680.0, "spent": 0.0, "available": 680.0, "prev_available": 680.0, "is_recurring": true, "is_variable": false, "ledger": []}, {"name": "Home insurance", "budgeted": 0.0, "spent": 0.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": []}], "Shopping": [{"name": "Clothing & accessories", "budgeted": 117.0, "spent": 88.0, "available": 29.0, "prev_available": 29.0, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2026-02", "desc": "To Events & recreation", "amt": -40.0, "note": "skipped shopping this month"}, {"date": "2026-02-13", "desc": "Reformation - Valentine's sale", "amt": -88.0, "note": ""}]}, {"name": "Retail", "budgeted": 15.09, "spent": 28.99, "available": -13.9, "prev_available": -13.9, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2026-02-05", "desc": "Amazon", "amt": -28.99, "note": ""}]}], "Food": [{"name": "Coffee shops", "budgeted": 123.2, "spent": 29.3, "available": 93.9, "prev_available": 93.9, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2026-02-03", "desc": "Starbucks", "amt": -6.85, "note": ""}, {"date": "2026-02-06", "desc": "Blue Bottle Coffee", "amt": -7.4, "note": ""}, {"date": "2026-02-11", "desc": "Starbucks", "amt": -6.85, "note": ""}, {"date": "2026-02-18", "desc": "Equator Coffees", "amt": -8.2, "note": ""}]}, {"name": "Groceries", "budgeted": 436.32, "spent": 222.5, "available": 213.82, "prev_available": 213.82, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2026-02-03", "desc": "Trader Joe's", "amt": -71.88, "note": ""}, {"date": "2026-02-10", "desc": "Whole Foods Market", "amt": -84.22, "note": ""}, {"date": "2026-02-17", "desc": "Trader Joe's", "amt": -66.4, "note": ""}]}, {"name": "Other food & drink", "budgeted": 45.4, "spent": 38.2, "available": 7.2, "prev_available": 7.2, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2026-02-09", "desc": "iHerb vitamins", "amt": -38.2, "note": ""}]}, {"name": "Restaurants & bars", "budgeted": 292.66, "spent": 198.67, "available": 93.99, "prev_available": 93.99, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2026-02-04", "desc": "Chipotle", "amt": -13.47, "note": ""}, {"date": "2026-02-07", "desc": "Valentine's dinner", "amt": -92.4, "note": ""}, {"date": "2026-02-12", "desc": "Sweetgreen", "amt": -16.8, "note": ""}, {"date": "2026-02-16", "desc": "Uber Eats", "amt": -31.2, "note": ""}, {"date": "2026-02-19", "desc": "The Well Bar & Grill", "amt": -44.8, "note": ""}]}], "Entertainment": [{"name": "Events & recreation", "budgeted": 301.5, "spent": 60.0, "available": 241.5, "prev_available": 241.5, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2026-02", "desc": "From Clothing & accessories", "amt": 40.0, "note": "skipped shopping this month"}, {"date": "2026-02-08", "desc": "Museum of Modern Art tickets", "amt": -32.0, "note": ""}, {"date": "2026-02-15", "desc": "Eventbrite - Jazz night", "amt": -28.0, "note": ""}]}, {"name": "Games", "budgeted": 15.03, "spent": 9.99, "available": 5.04, "prev_available": 5.04, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2026-02-12", "desc": "Steam Purchase", "amt": -9.99, "note": ""}]}, {"name": "Music & audio", "budgeted": 39.03, "spent": 10.99, "available": 28.04, "prev_available": 28.04, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2026-02-01", "desc": "Spotify Premium", "amt": -10.99, "note": ""}]}, {"name": "Other entertainment", "budgeted": 151.57, "spent": 31.48, "available": 120.09, "prev_available": 120.09, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2026-02-03", "desc": "Netflix", "amt": -15.49, "note": ""}, {"date": "2026-02-10", "desc": "HBO Max", "amt": -15.99, "note": ""}]}], "Health": [{"name": "Fitness", "budgeted": 58.03, "spent": 53.99, "available": 4.04, "prev_available": 4.04, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2026-02-01", "desc": "Planet Fitness", "amt": -24.99, "note": ""}, {"date": "2026-02-08", "desc": "ClassPass", "amt": -29.0, "note": ""}]}, {"name": "Medical", "budgeted": 181.4, "spent": 22.4, "available": 159.0, "prev_available": 159.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2026-02-14", "desc": "CVS Pharmacy", "amt": -22.4, "note": ""}]}], "Auto": [{"name": "Gas & EV charging", "budgeted": 85.4, "spent": 46.4, "available": 39.0, "prev_available": 39.0, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2026-02-08", "desc": "Shell Gas Station", "amt": -46.4, "note": ""}]}], "Transfers": [{"name": "Investment transfers", "budgeted": 400.0, "spent": 400.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2026-02-15", "desc": "Fidelity Transfer", "amt": -400.0, "note": ""}]}], "Travel": [{"name": "Other travel", "budgeted": 12.0, "spent": 0.0, "available": 12.0, "prev_available": 12.0, "is_recurring": true, "is_variable": false, "ledger": []}], "Personal": [{"name": "Personal care", "budgeted": 74.1, "spent": 52.18, "available": 21.92, "prev_available": 21.92, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2026-02-08", "desc": "Ulta Beauty", "amt": -52.18, "note": ""}]}, {"name": "Pet supplies", "budgeted": -70.58, "spent": 72.18, "available": -142.76, "prev_available": -142.76, "is_recurring": false, "is_variable": true, "ledger": [{"date": "2026-02-06", "desc": "Chewy.com", "amt": -72.18, "note": ""}]}], "Housing": [{"name": "Rent", "budgeted": 1650.0, "spent": 1650.0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": [{"date": "2026-02-01", "desc": "ACH - Oakwood Properties", "amt": -1650.0, "note": ""}]}]}, "is_future": false}, "2026-03": {"summary": {"bank": 5980.0, "last_snapshot": 5980.0, "last_snapshot_month": "2026-02", "txns_since_snapshot": 687.7, "rollover_into_month": 1591.88, "excess": 1056.54, "holes": 52.76, "net_health": 1003.78, "new_funding": 4620.0, "total_enveloped": 6211.88, "posted_income": 0.0, "other_income": 0.0, "expected_income": 5245.0, "snapshot_balance": null, "uncategorized_spend": 0.0, "uncategorized_cats": {}}, "categories": {"Bills": [{"name": "Auto insurance", "budgeted": 142.0, "spent": 0, "available": 142.0, "prev_available": 142.0, "is_recurring": true, "is_variable": false, "ledger": []}, {"name": "Phone & internet", "budgeted": 95.0, "spent": 0, "available": 95.0, "prev_available": 95.0, "is_recurring": true, "is_variable": false, "ledger": []}, {"name": "Student loan payments", "budgeted": 380.0, "spent": 0, "available": 380.0, "prev_available": 380.0, "is_recurring": true, "is_variable": false, "ledger": []}], "General": [{"name": "Car services", "budgeted": 0.0, "spent": 0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": []}, {"name": "Emergency fund", "budgeted": 880.0, "spent": 0, "available": 880.0, "prev_available": 880.0, "is_recurring": true, "is_variable": false, "ledger": []}, {"name": "Home insurance", "budgeted": 0.0, "spent": 0, "available": 0.0, "prev_available": 0.0, "is_recurring": true, "is_variable": false, "ledger": []}], "Shopping": [{"name": "Clothing & accessories", "budgeted": 149.0, "spent": 0, "available": 149.0, "prev_available": 149.0, "is_recurring": false, "is_variable": true, "ledger": []}, {"name": "Retail", "budgeted": 66.1, "spent": 0, "available": 66.1, "prev_available": 66.1, "is_recurring": false, "is_variable": true, "ledger": []}], "Food": [{"name": "Coffee shops", "budgeted": 153.9, "spent": 0, "available": 153.9, "prev_available": 153.9, "is_recurring": false, "is_variable": true, "ledger": []}, {"name": "Groceries", "budgeted": 533.82, "spent": 0, "available": 533.82, "prev_available": 533.82, "is_recurring": false, "is_variable": true, "ledger": []}, {"name": "Other food & drink", "budgeted": 47.2, "spent": 0, "available": 47.2, "prev_available": 47.2, "is_recurring": false, "is_variable": true, "ledger": []}, {"name": "Restaurants & bars", "budgeted": 353.99, "spent": 0, "available": 353.99, "prev_available": 353.99, "is_recurring": false, "is_variable": true, "ledger": []}], "Entertainment": [{"name": "Events & recreation", "budgeted": 361.5, "spent": 0, "available": 361.5, "prev_available": 361.5, "is_recurring": false, "is_variable": true, "ledger": []}, {"name": "Games", "budgeted": 20.04, "spent": 0, "available": 20.04, "prev_available": 20.04, "is_recurring": true, "is_variable": false, "ledger": []}, {"name": "Music & audio", "budgeted": 46.04, "spent": 0, "available": 46.04, "prev_available": 46.04, "is_recurring": true, "is_variable": false, "ledger": []}, {"name": "Other entertainment", "budgeted": 180.09, "spent": 0, "available": 180.09, "prev_available": 180.09, "is_recurring": true, "is_variable": false, "ledger": []}], "Health": [{"name": "Fitness", "budgeted": 59.04, "spent": 0, "available": 59.04, "prev_available": 59.04, "is_recurring": true, "is_variable": false, "ledger": []}, {"name": "Medical", "budgeted": 209.0, "spent": 0, "available": 209.0, "prev_available": 209.0, "is_recurring": true, "is_variable": false, "ledger": []}], "Auto": [{"name": "Gas & EV charging", "budgeted": 124.0, "spent": 0, "available": 124.0, "prev_available": 124.0, "is_recurring": false, "is_variable": true, "ledger": []}], "Transfers": [{"name": "Investment transfers", "budgeted": 500.0, "spent": 0, "available": 500.0, "prev_available": 500.0, "is_recurring": true, "is_variable": false, "ledger": []}], "Travel": [{"name": "Other travel", "budgeted": 212.0, "spent": 0, "available": 212.0, "prev_available": 212.0, "is_recurring": true, "is_variable": false, "ledger": []}], "Personal": [{"name": "Personal care", "budgeted": 101.92, "spent": 0, "available": 101.92, "prev_available": 101.92, "is_recurring": false, "is_variable": true, "ledger": []}, {"name": "Pet supplies", "budgeted": -52.76, "spent": 0, "available": -52.76, "prev_available": -52.76, "is_recurring": false, "is_variable": true, "ledger": []}], "Housing": [{"name": "Rent", "budgeted": 1650.0, "spent": 0, "available": 1650.0, "prev_available": 1650.0, "is_recurring": true, "is_variable": false, "ledger": []}]}, "is_future": true}}, "cat_history": {"Auto insurance": [{"month": "2025-11", "available": 0.0}, {"month": "2025-12", "available": 0.0}, {"month": "2026-01", "available": 0.0}, {"month": "2026-02", "available": 0.0}, {"month": "2026-03", "available": 142.0}], "Car services": [{"month": "2025-11", "available": 0.0}, {"month": "2025-12", "available": 0.0}, {"month": "2026-01", "available": 0.0}, {"month": "2026-02", "available": 0.0}, {"month": "2026-03", "available": 0.0}], "Clothing & accessories": [{"month": "2025-11", "available": 5.65}, {"month": "2025-12", "available": -0.6}, {"month": "2026-01", "available": 37.0}, {"month": "2026-02", "available": 29.0}, {"month": "2026-03", "available": 149.0}], "Coffee shops": [{"month": "2025-11", "available": 16.45}, {"month": "2025-12", "available": 46.75}, {"month": "2026-01", "available": 63.2}, {"month": "2026-02", "available": 93.9}, {"month": "2026-03", "available": 153.9}], "Emergency fund": [{"month": "2025-11", "available": 200.0}, {"month": "2025-12", "available": 280.0}, {"month": "2026-01", "available": 480.0}, {"month": "2026-02", "available": 680.0}, {"month": "2026-03", "available": 880.0}], "Events & recreation": [{"month": "2025-11", "available": 66.5}, {"month": "2025-12", "available": 105.0}, {"month": "2026-01", "available": 141.5}, {"month": "2026-02", "available": 241.5}, {"month": "2026-03", "available": 361.5}], "Fitness": [{"month": "2025-11", "available": 1.01}, {"month": "2025-12", "available": 2.02}, {"month": "2026-01", "available": 3.03}, {"month": "2026-02", "available": 4.04}, {"month": "2026-03", "available": 59.04}], "Games": [{"month": "2025-11", "available": 0.01}, {"month": "2025-12", "available": 0.02}, {"month": "2026-01", "available": 0.03}, {"month": "2026-02", "available": 5.04}, {"month": "2026-03", "available": 20.04}], "Gas & EV charging": [{"month": "2025-11", "available": 2.0}, {"month": "2025-12", "available": -3.6}, {"month": "2026-01", "available": 0.4}, {"month": "2026-02", "available": 39.0}, {"month": "2026-03", "available": 124.0}], "Groceries": [{"month": "2025-11", "available": 73.26}, {"month": "2025-12", "available": 80.17}, {"month": "2026-01", "available": 116.32}, {"month": "2026-02", "available": 213.82}, {"month": "2026-03", "available": 533.82}], "Home insurance": [{"month": "2025-11", "available": 0.0}, {"month": "2025-12", "available": 0.0}, {"month": "2026-01", "available": 0.0}, {"month": "2026-02", "available": 0.0}, {"month": "2026-03", "available": 0.0}], "Investment transfers": [{"month": "2025-11", "available": 0.0}, {"month": "2025-12", "available": 0.0}, {"month": "2026-01", "available": 0.0}, {"month": "2026-02", "available": 0.0}, {"month": "2026-03", "available": 500.0}], "Medical": [{"month": "2025-11", "available": 31.6}, {"month": "2025-12", "available": 58.8}, {"month": "2026-01", "available": 131.4}, {"month": "2026-02", "available": 159.0}, {"month": "2026-03", "available": 209.0}], "Music & audio": [{"month": "2025-11", "available": 7.01}, {"month": "2025-12", "available": 14.02}, {"month": "2026-01", "available": 21.03}, {"month": "2026-02", "available": 28.04}, {"month": "2026-03", "available": 46.04}], "Other entertainment": [{"month": "2025-11", "available": 28.52}, {"month": "2025-12", "available": 63.05}, {"month": "2026-01", "available": 91.57}, {"month": "2026-02", "available": 120.09}, {"month": "2026-03", "available": 180.09}], "Other food & drink": [{"month": "2025-11", "available": 1.8}, {"month": "2025-12", "available": 3.6}, {"month": "2026-01", "available": 5.4}, {"month": "2026-02", "available": 7.2}, {"month": "2026-03", "available": 47.2}], "Other travel": [{"month": "2025-11", "available": 0.0}, {"month": "2025-12", "available": 12.0}, {"month": "2026-01", "available": 12.0}, {"month": "2026-02", "available": 12.0}, {"month": "2026-03", "available": 212.0}], "Personal care": [{"month": "2025-11", "available": 0.7}, {"month": "2025-12", "available": -12.7}, {"month": "2026-01", "available": -5.9}, {"month": "2026-02", "available": 21.92}, {"month": "2026-03", "available": 101.92}], "Pet supplies": [{"month": "2025-11", "available": 3.42}, {"month": "2025-12", "available": 2.82}, {"month": "2026-01", "available": -160.58}, {"month": "2026-02", "available": -142.76}, {"month": "2026-03", "available": -52.76}], "Phone & internet": [{"month": "2025-11", "available": 0.0}, {"month": "2025-12", "available": 0.0}, {"month": "2026-01", "available": 0.0}, {"month": "2026-02", "available": 0.0}, {"month": "2026-03", "available": 95.0}], "Rent": [{"month": "2025-11", "available": 0.0}, {"month": "2025-12", "available": 0.0}, {"month": "2026-01", "available": 0.0}, {"month": "2026-02", "available": 0.0}, {"month": "2026-03", "available": 1650.0}], "Restaurants & bars": [{"month": "2025-11", "available": 42.48}, {"month": "2025-12", "available": 12.43}, {"month": "2026-01", "available": 32.66}, {"month": "2026-02", "available": 93.99}, {"month": "2026-03", "available": 353.99}], "Retail": [{"month": "2025-11", "available": 36.87}, {"month": "2025-12", "available": -67.93}, {"month": "2026-01", "available": -64.91}, {"month": "2026-02", "available": -13.9}, {"month": "2026-03", "available": 66.1}], "Student loan payments": [{"month": "2025-11", "available": 0.0}, {"month": "2025-12", "available": 0.0}, {"month": "2026-01", "available": 0.0}, {"month": "2026-02", "available": 0.0}, {"month": "2026-03", "available": 380.0}]}, "config": {"recurring": ["Investment transfers", "Home insurance", "Rent", "Other entertainment", "Fitness", "Other travel", "Medical", "Games", "Car services", "Emergency fund", "Auto insurance", "Music & audio", "Phone & internet", "Student loan payments"], "variable": ["Events & recreation", "Gas & EV charging", "Other food & drink", "Clothing & accessories", "Coffee shops", "Groceries", "Restaurants & bars", "Retail", "Personal care", "Pet supplies"], "health_exclusions": ["General", "Travel", "Car services", "Other"]}, "income_history": [{"month": "2025-11", "amount": 5245.0}, {"month": "2025-12", "amount": 5245.0}, {"month": "2026-01", "amount": 5245.0}, {"month": "2026-02", "amount": 5244.97}, {"month": "2026-03", "amount": 0.0}], "other_income_history": [{"month": "2025-11", "amount": 18.4}, {"month": "2025-12", "amount": 42.0}, {"month": "2026-01", "amount": 380.0}, {"month": "2026-02", "amount": 55.0}, {"month": "2026-03", "amount": 0.0}]};
+let curMonth = DB.current_month;
+let transferQueue = [];
+let queueOpen = false;
+let catsPopulated = false;
+let sortUnderfunded = false;
+let whatifMode = false;
+let whatifDeltas = {}; // catName -> delta amount from queued what-if transfers
+
+// Days elapsed and remaining in current month
+function monthProgress() {
+    const now = new Date();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const elapsed = now.getDate();
+    return { elapsed, total: daysInMonth, pct: elapsed / daysInMonth };
+}
+
+function fmt(n) {
+    const s = Math.abs(n).toLocaleString(undefined, { minimumFractionDigits: 2 });
+    const dot = s.lastIndexOf('.');
+    if (dot === -1) return s;
+    return s.slice(0, dot) + '<span class="decimal">' + s.slice(dot) + '</span>';
+}
+
+function fmtSigned(n) {
+    return (n < 0 ? '−' : '') + '$' + fmt(n);
+}
+
+// ── Income sparkline builder ──
+function buildIncomeSparkline(history, color) {
+    if (!history || history.length < 2) return '';
+    const vals = history.map(h => h.amount);
+    const min = Math.min(...vals);
+    const max = Math.max(...vals);
+    const range = max - min || 1;
+    const W = 56, H = 20, pad = 2;
+    const n = vals.length;
+    const xs = vals.map((_, i) => pad + (i / (n - 1)) * (W - pad * 2));
+    const ys = vals.map(v => H - pad - ((v - min) / range) * (H - pad * 2));
+    const pts = xs.map((x, i) => x.toFixed(1) + ',' + ys[i].toFixed(1)).join(' ');
+    const lx = xs[n - 1].toFixed(1), ly = ys[n - 1].toFixed(1);
+    return `<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:inline-block;vertical-align:middle">
+        <polyline points="${pts}" fill="none" stroke="var(--border2)" stroke-width="1.2" stroke-linejoin="round"/>
+        <circle cx="${lx}" cy="${ly}" r="2.2" fill="${color}"/>
+    </svg>`;
+}
+
+// ── Sparkline builder ──
+function buildSparkline(catName) {
+    const history = DB.cat_history[catName];
+    if (!history || history.length < 2) return '';
+    const vals = history.map(h => h.available);
+    const min = Math.min(...vals);
+    const max = Math.max(...vals);
+    const range = max - min || 1;
+    const W = 56, H = 20, pad = 2;
+    const n = vals.length;
+    const xs = vals.map((_, i) => pad + (i / (n - 1)) * (W - pad * 2));
+    const ys = vals.map(v => H - pad - ((v - min) / range) * (H - pad * 2));
+    const pts = xs.map((x, i) => x.toFixed(1) + ',' + ys[i].toFixed(1)).join(' ');
+    const last = vals[n - 1];
+    const dotColor = last < -0.01 ? 'var(--rose)' : last > 100 ? 'var(--green)' : 'var(--sage)';
+    const lx = xs[n - 1].toFixed(1), ly = ys[n - 1].toFixed(1);
+    return `<svg class="spark" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+        <polyline points="${pts}" fill="none" stroke="var(--border2)" stroke-width="1.2" stroke-linejoin="round"/>
+        <circle cx="${lx}" cy="${ly}" r="2.2" fill="${dotColor}"/>
+    </svg>`;
+}
+
+// ── Main render ──
+function render() {
+    const m = DB.data_by_month[curMonth];
+    const filter = document.getElementById('search').value.toLowerCase();
+    const prog = monthProgress();
+
+    document.getElementById('monthLabel').textContent = curMonth;
+    document.getElementById('planningBadge').style.display = m.is_future ? 'inline-block' : 'none';
+    document.getElementById('disclaimer').style.display = m.is_future ? 'block' : 'none';
+
+    // ── Income bar (current month only) ──
+    const incomeBar = document.getElementById('incomeBar');
+    if (m.summary.expected_income === 0) {
+        incomeBar.innerHTML = '';
+    } else if (m.is_future) {
+        // Planning mode: show expected income + allocation status
+        const expected = m.summary.expected_income;
+        const allocated = m.summary.new_funding;
+        // Unallocated = expected income minus what's been budgeted to envelopes this month
+        const unallocated = expected - allocated;
+        const uClass = unallocated < -0.01 ? 'var(--rose)' : unallocated > 0.01 ? 'var(--sage)' : 'var(--muted)';
+        const uSign = unallocated < 0 ? '−' : '';
+        incomeBar.innerHTML = '';
+    } else {
+        const posted   = m.summary.posted_income;
+        const expected = m.summary.expected_income;
+        const otherInc = m.summary.other_income || 0;
+        // Buffer of ±$0.05 per paycheck — use a small tolerance for "remaining"
+        const INCOME_BUFFER = 0.05;
+        const remaining = expected - posted;
+        const absRemaining = Math.abs(remaining);
+        const isWithinBuffer = absRemaining <= INCOME_BUFFER;
+        const allocated = m.summary.new_funding;
+        const pct = Math.min(100, Math.round((posted / expected) * 100));
+        const remainClass = remaining <= INCOME_BUFFER ? 'cv-pos' : 'cv-neg';
+        const remainLabel = isWithinBuffer ? 'within paycheck buffer' : remaining <= 0 ? 'fully received' : 'still pending';
+        const remainDisplay = isWithinBuffer ? `✓ ~$0` : `${remaining > 0 ? '' : '✓ '}$${fmt(absRemaining)}`;
+
+        const incSpark = buildIncomeSparkline(DB.income_history, 'var(--sage)');
+        const otherSpark = buildIncomeSparkline(DB.other_income_history, 'var(--green)');
+
+        // Unassigned cash: actual bank balance minus ALL enveloped cash
+        // total_enveloped already sums every envelope balance (including normally-excluded ones)
+        const snap = m.summary.snapshot_balance;
+        const unassignedStat = (snap !== null && snap !== undefined) ? (() => {
+            const unassigned = m.summary.bank - m.summary.total_enveloped;
+            const uClass = unassigned < -0.01 ? 'var(--rose)' : 'var(--sage)';
+            const uSign = unassigned < 0 ? '−' : '';
+            const uSub = unassigned < -0.01 ? 'over-allocated vs cash' : 'sitting outside envelopes';
+            return `<div class="income-stat">
+                    <div class="income-label">Unassigned Cash</div>
+                    <div class="income-value" style="color:${uClass}">${uSign}$${fmt(Math.abs(unassigned))}</div>
+                    <div class="income-sub">${uSub}</div>
+                </div>`;
+        })() : '';
+
+        const otherStat = otherInc > 0.01 ? `
+            <div class="income-stat">
+                <div class="income-label">Other Income ${otherSpark}</div>
+                <div class="income-value" style="color:var(--green)">$${fmt(otherInc)}</div>
+                <div class="income-sub">non-wage deposits this month</div>
+            </div>` : '';
+
+        incomeBar.innerHTML = `
+            <div class="income-bar">
+                <div class="income-stat">
+                    <div class="income-label">Posted Income (Wages) ${incSpark}</div>
+                    <div class="income-value" style="color:var(--sage)">$${fmt(posted)}</div>
+                    <div class="progress-wrap"><div class="progress-fill" style="width:${pct}%;background:var(--sage-dim)"></div></div>
+                    <div class="income-sub">${pct}% of expected</div>
+                </div>
+                ${otherStat}
+                <div class="income-stat">
+                    <div class="income-label">Expected</div>
+                    <div class="income-value" style="color:var(--text2)">$${fmt(expected)}</div>
+                    <div class="income-sub">monthly target</div>
+                </div>
+                <div class="income-stat">
+                    <div class="income-label">Remaining</div>
+                    <div class="income-value ${remainClass}">${remainDisplay}</div>
+                    <div class="income-sub">${remainLabel}</div>
+                </div>
+                ${unassignedStat}
+            </div>`;
+    }
+
+    const nh = m.summary.net_health;
+    const planningStrip = document.getElementById('planningStrip');
+
+    let triageHTML;
+    if (m.is_future) {
+        const snap = m.summary.last_snapshot;
+        const snapMonth = m.summary.last_snapshot_month;
+        const txnsSince = m.summary.txns_since_snapshot || 0;
+        const rollover = m.summary.rollover_into_month || 0;
+        const currentBalance = snap + txnsSince;
+        const totalSpokenFor = rollover + m.summary.new_funding;
+        const projUnassigned = currentBalance + m.summary.expected_income - totalSpokenFor;
+
+        let snapLabel = 'no balance snapshot on record';
+        if (snapMonth) {
+            const [sy, sm] = snapMonth.split('-').map(Number);
+            const prevDate = new Date(sy, sm - 2, 1);
+            const prevLabel = prevDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+            snapLabel = `EOM ${prevLabel}`;
+        }
+        const snapColor = snapMonth ? 'var(--text2)' : 'var(--rose)';
+        const puClass = projUnassigned >= 0 ? 'cv-pos' : 'cv-neg';
+        const puSign  = projUnassigned < 0 ? '−' : '';
+        const txnsSign = txnsSince >= 0 ? '+' : '−';
+
+        // Small strip: Unassigned Cash (Proj.) with breakdown
+        planningStrip.style.display = 'block';
+        planningStrip.innerHTML = `
+            <div class="planning-strip-inner">
+                <div>
+                    <div class="planning-strip-label">Unassigned Cash (Proj.)</div>
+                    <div class="planning-strip-value ${puClass}">${puSign}$${fmt(Math.abs(projUnassigned))}</div>
+                </div>
+                <div class="planning-strip-sub">free cash after all obligations</div>
+                <div class="planning-strip-breakdown">
+                    <div class="planning-strip-item">
+                        <div class="psi-label">${snapLabel}</div>
+                        <div class="psi-val" style="color:${snapColor}">$${fmt(snap)}</div>
+                    </div>
+                    ${Math.abs(txnsSince) > 0.01 ? `
+                    <div class="planning-strip-item">
+                        <div class="psi-label">+ txns since snapshot</div>
+                        <div class="psi-val" style="color:${txnsSince >= 0 ? 'var(--sage)' : 'var(--rose)'}">
+                            ${txnsSign}$${fmt(Math.abs(txnsSince))}
+                        </div>
+                    </div>
+                    <div class="planning-strip-item">
+                        <div class="psi-label">= current balance</div>
+                        <div class="psi-val" style="color:var(--text)">$${fmt(currentBalance)}</div>
+                    </div>` : ''}
+                    <div class="planning-strip-item">
+                        <div class="psi-label">+ expected income</div>
+                        <div class="psi-val" style="color:var(--text2)">$${fmt(m.summary.expected_income)}</div>
+                    </div>
+                    <div class="planning-strip-item">
+                        <div class="psi-label">− rollovers</div>
+                        <div class="psi-val" style="color:var(--rose)">$${fmt(rollover)}</div>
+                    </div>
+                    <div class="planning-strip-item">
+                        <div class="psi-label">− new allocations</div>
+                        <div class="psi-val" style="color:var(--rose)">$${fmt(m.summary.new_funding)}</div>
+                    </div>
+                </div>
+            </div>`;
+
+        // Main triage grid: Unallocated Surplus is the big number
+        const unallocated = m.summary.expected_income - m.summary.new_funding;
+        const uClass = unallocated >= 0 ? 'cv-pos' : 'cv-neg';
+        const uSign = unallocated < 0 ? '−' : '';
+        triageHTML = `
+        <div class="triage-card primary">
+            <div class="card-label">Unallocated Surplus</div>
+            <div class="card-value ${uClass}">${uSign}$${fmt(Math.abs(unallocated))}</div>
+            <div class="card-sub">This month's income not yet assigned to an envelope</div>
+            <div class="card-breakdown">
+                <div class="breakdown-row">
+                    <span class="breakdown-label">expected income</span>
+                    <span class="breakdown-val" style="color:var(--text2)">$${fmt(m.summary.expected_income)}</span>
+                </div>
+                <div class="breakdown-row">
+                    <span class="breakdown-label">− new allocations (${Math.round((m.summary.new_funding/m.summary.expected_income)*100)}% of $${fmt(m.summary.expected_income)})</span>
+                    <span class="breakdown-val" style="color:var(--rose)">$${fmt(m.summary.new_funding)}</span>
+                </div>
+                ${m.summary.new_funding < 1 ? `<div class="breakdown-row"><span class="breakdown-label" style="color:var(--rose);font-style:italic">no budgets.csv entries for this month</span></div>` : ''}
+            </div>
+        </div>
+        <div class="triage-card card-excess">
+            <div class="card-label">Deployed Capital</div>
+            <div class="card-value-md" style="color:var(--sage)">$${fmt(m.summary.total_enveloped)}</div>
+            <div class="card-sub">Total cash sitting across all envelopes</div>
+        </div>
+        <div class="triage-card card-holes">
+            <div class="card-label">Needs Attention</div>
+            <div class="card-value-md" style="color:var(--rose)">$${fmt(m.summary.holes)}</div>
+            <div class="card-sub">Combined shortfall across envelopes</div>
+        </div>`;
+    } else {
+        planningStrip.style.display = 'none';
+        const netClass = nh >= 0 ? 'cv-pos' : 'cv-neg';
+        triageHTML = `
+        <div class="triage-card primary">
+            <div class="card-label">Operating Margin</div>
+            <div class="card-value ${netClass}">$${fmt(nh)}</div>
+            <div class="card-sub">Extra cash across all active envelopes</div>
+        </div>
+        <div class="triage-card card-excess">
+            <div class="card-label">Deployed Capital</div>
+            <div class="card-value-md" style="color:var(--sage)">$${fmt(m.summary.excess)}</div>
+            <div class="card-sub">Positive cash in operational envelopes</div>
+        </div>
+        <div class="triage-card card-holes">
+            <div class="card-label">Needs Attention</div>
+            <div class="card-value-md" style="color:var(--rose)">$${fmt(m.summary.holes)}</div>
+            <div class="card-sub">Combined shortfall across envelopes</div>
+        </div>`;
+    }
+
+    document.getElementById('triageHeader').innerHTML = triageHTML;
+
+    document.getElementById('totalLine').innerHTML =
+        `Total enveloped cash &nbsp;·&nbsp; <span>$${fmt(m.summary.total_enveloped)}</span>`;
+
+    // Uncategorized spend notice
+    const uncatLine = document.getElementById('uncatLine');
+    const uncatDetail = document.getElementById('uncatDetail');
+    const us = m.summary.uncategorized_spend;
+    const uc = m.summary.uncategorized_cats;
+    if (us > 0.01 && !m.is_future) {
+        const catCount = Object.keys(uc).length;
+        uncatLine.style.display = 'block';
+        uncatLine.innerHTML = `&#9432; <span>$${fmt(us)}</span> in ${catCount} untracked categor${catCount === 1 ? 'y' : 'ies'} this month &nbsp;&#8250;`;
+        uncatDetail.innerHTML = Object.entries(uc).map(([k, v]) =>
+            `<div class="uncat-row"><span class="uncat-cat">${k || '(no category)'}</span><span>$${fmt(v)}</span></div>`
+        ).join('');
+    } else {
+        uncatLine.style.display = 'none';
+        uncatDetail.style.display = 'none';
+    }
+
+    // Flatten all cats, optionally sort underfunded first
+    let allCats = [];
+    for (const group in m.categories) {
+        m.categories[group].forEach(cat => allCats.push({ ...cat, group }));
+    }
+    if (sortUnderfunded) {
+        allCats.sort((a, b) => {
+            const aAvail = a.available + (whatifMode ? (whatifDeltas[a.name] || 0) : 0);
+            const bAvail = b.available + (whatifMode ? (whatifDeltas[b.name] || 0) : 0);
+            if (aAvail < 0 && bAvail >= 0) return -1;
+            if (bAvail < 0 && aAvail >= 0) return 1;
+            if (aAvail < 0 && bAvail < 0) return aAvail - bAvail;
+            return 0;
+        });
+    }
+
+    const cats = [];
+    let rowIdx = 0;
+    let lastGroup = null;
+    let html = `<table>
+        <thead><tr>
+            <th>Envelope</th>
+            <th class="th-spark">Trend</th>
+            <th>Spent</th>
+            <th>Budgeted</th>
+            <th>Available</th>
+        </tr></thead><tbody>`;
+
+    allCats.forEach((cat, idx) => {
+        cats.push(cat.name);
+        if (!cat.name.toLowerCase().includes(filter)) return;
+
+        const lId = 'l-' + (cat.group + '-' + idx).replace(/[^a-zA-Z0-9]/g, '-');
+
+        // Apply what-if delta if active
+        const wiDelta = whatifMode ? (whatifDeltas[cat.name] || 0) : 0;
+        const displayAvail = cat.available + wiDelta;
+
+        const pillClass = displayAvail < -0.01
+            ? 'pill-neg'
+            : displayAvail > 100
+                ? 'pill-green'
+                : displayAvail > 0.01
+                    ? 'pill-pos'
+                    : 'pill-zero';
+
+        const wiIndicator = (whatifMode && Math.abs(wiDelta) > 0.01)
+            ? `<span class="sub-ind" style="color:var(--green-dim)">&#8982; ${wiDelta > 0 ? '+' : '−'}$${fmt(wiDelta)}</span>`
+            : '';
+
+        const spark = buildSparkline(cat.name);
+
+        // MoM delta
+        let deltaHtml = '';
+        if (cat.prev_available !== null && cat.prev_available !== undefined) {
+            const d = displayAvail - cat.prev_available;
+            if (Math.abs(d) > 0.01) {
+                const dClass = d > 0 ? 'ind-val-pos' : 'ind-val-neg';
+                const dSign = d > 0 ? '+' : '−';
+                deltaHtml = `<span class="sub-ind"><span class="ind-label">vs last</span><span class="${dClass}">${dSign}$${fmt(d)}</span></span>`;
+            }
+        }
+
+        // Coverage % for variable envelopes (current month only)
+        let coverageHtml = '';
+        if (cat.is_variable && !m.is_future && cat.budgeted > 0) {
+            const spentPct = Math.round((cat.spent / cat.budgeted) * 100);
+            const monthPct = Math.round(prog.pct * 100);
+            const fillColor = spentPct > monthPct + 15 ? 'var(--rose)' : spentPct > monthPct ? 'var(--green)' : 'var(--sage)';
+            const eomProjected = prog.pct > 0 ? cat.spent / prog.pct : cat.spent;
+            const eomDiff = cat.budgeted - eomProjected;
+            const eomSign = eomDiff < 0 ? '−' : '';
+            coverageHtml = `
+                <div class="coverage-bar"><div class="coverage-fill" style="width:${Math.min(100,spentPct)}%;background:${fillColor}"></div></div>
+                <div class="coverage-label">${spentPct}% spent · ${monthPct}% of month</div>
+                <div class="coverage-label" style="color:var(--muted)">EOM ~${eomSign}$${fmt(Math.abs(eomDiff))}</div>`;
+        }
+
+        // Recurring badge
+        const recurBadge = cat.is_recurring
+            ? `<span style="font-size:8px;color:var(--muted);margin-left:6px;letter-spacing:1px">↻</span>`
+            : '';
+
+        const subRow = (deltaHtml || wiIndicator || coverageHtml)
+            ? `<div class="sub-indicators">${deltaHtml}${wiIndicator}</div>${coverageHtml}`
+            : '';
+
+        const ledgerItems = cat.ledger
+            .slice().sort((a, b) => new Date(b.date) - new Date(a.date))
+            .map(l => {
+                const ac = l.amt >= 0 ? 'amt-pos' : 'amt-neg';
+                return `<div class="ledger-item">
+                    <span>${l.date}</span>
+                    <span class="truncate">${l.desc}</span>
+                    <span class="truncate">${l.note}</span>
+                    <span class="${ac}">${fmtSigned(l.amt)}</span>
+                </div>`;
+            }).join('');
+
+        // Group header if needed
+        if (!sortUnderfunded && cat.group !== lastGroup) {
+            html += `<tr class="group-header"><td colspan="5">${cat.group}</td></tr>`;
+            lastGroup = cat.group;
+        } else if (sortUnderfunded && cat.group !== lastGroup) {
+            // In underfunded sort mode, show group inline with name
+            lastGroup = cat.group;
+        }
+
+        const delay = (rowIdx * 18) + 'ms';
+        html += `
+            <tr class="cat-row" style="animation-delay:${delay}">
+                <td><div class="cat-name" onclick="toggleLedger('${lId}')">${cat.name}${recurBadge}</div></td>
+                <td class="td-spark">${spark}</td>
+                <td class="amount-muted">$${fmt(cat.spent)}</td>
+                <td class="amount-muted">$${fmt(cat.budgeted)}</td>
+                <td>
+                    <div class="avail-cell">
+                        <span class="pill ${pillClass}" onclick="smartMove('${cat.name}',${displayAvail})">${displayAvail < 0 ? '−' : ''}$${fmt(displayAvail)}</span>
+                        ${subRow}
+                    </div>
+                </td>
+            </tr>
+            <tr id="${lId}" class="ledger-row-wrap">
+                <td colspan="5">
+                    <div class="ledger-inner">
+                        <div class="ledger-header">
+                            <span>Date</span><span>Description</span><span>Note</span><span>Amount</span>
+                        </div>
+                        ${ledgerItems || '<div style="padding:10px 0;font-size:11px;color:var(--muted)">No transactions this month.</div>'}
+                    </div>
+                </td>
+            </tr>`;
+        rowIdx++;
+    });
+
+    document.getElementById('tableBody').innerHTML = html + '</tbody></table>';
+
+    if (!catsPopulated) {
+        const f = document.getElementById('fromCat');
+        const t = document.getElementById('toCat');
+        cats.slice().sort().forEach(c => { f.add(new Option(c, c)); t.add(new Option(c, c)); });
+        catsPopulated = true;
+    }
+}
+
+function toggleLedger(id) {
+    const el = document.getElementById(id);
+    el.style.display = el.style.display === 'table-row' ? 'none' : 'table-row';
+}
+
+function smartMove(name, amt) {
+    if (amt < 0) {
+        document.getElementById('toCat').value = name;
+        document.getElementById('amt').value = Math.abs(amt).toFixed(2);
+    } else {
+        document.getElementById('fromCat').value = name;
+        document.getElementById('amt').value = amt.toFixed(2);
+    }
+}
+
+function changeMonth(dir) {
+    const i = DB.months.indexOf(curMonth);
+    if (i + dir >= 0 && i + dir < DB.months.length) {
+        curMonth = DB.months[i + dir];
+        render();
+    }
+}
+
+// ── Sort toggle ──
+function toggleSort() {
+    sortUnderfunded = !sortUnderfunded;
+    document.getElementById('underfundedBtn').classList.toggle('active', sortUnderfunded);
+    render();
+}
+
+// ── What-if mode ──
+function toggleWhatif() {
+    whatifMode = !whatifMode;
+    if (!whatifMode) whatifDeltas = {};
+    document.getElementById('whatifBtn').classList.toggle('active', whatifMode);
+    document.body.classList.toggle('whatif-active', whatifMode);
+    render();
+}
+
+function applyWhatifDeltas() {
+    // Recompute deltas from current queue for current month
+    whatifDeltas = {};
+    if (!whatifMode) return;
+    transferQueue.forEach(r => {
+        if (r.month !== curMonth) return;
+        whatifDeltas[r.from] = (whatifDeltas[r.from] || 0) - r.amount;
+        whatifDeltas[r.to]   = (whatifDeltas[r.to]   || 0) + r.amount;
+    });
+}
+
+// ── Smart rebalance ──
+function smartRebalance() {
+    const m = DB.data_by_month[curMonth];
+    const excluded = new Set([...DB.config.health_exclusions, ...DB.config.recurring]);
+    
+    // Collect underfunded and surplus envelopes
+    const underfunded = [];
+    const surplus = [];
+    for (const group in m.categories) {
+        m.categories[group].forEach(cat => {
+            if (excluded.has(cat.name)) return;
+            if (cat.available < -0.01) underfunded.push({ name: cat.name, need: Math.abs(cat.available) });
+            else if (cat.available > 0.01) surplus.push({ name: cat.name, avail: cat.available });
+        });
+    }
+    if (!underfunded.length) { alert('No underfunded envelopes to fix.'); return; }
+    if (!surplus.length)     { alert('No surplus envelopes to draw from.'); return; }
+
+    // Sort: most underfunded first, most surplus first
+    underfunded.sort((a, b) => b.need - a.need);
+    surplus.sort((a, b) => b.avail - a.avail);
+
+    const newMoves = [];
+    const surplusLeft = surplus.map(s => ({ ...s }));
+
+    for (const u of underfunded) {
+        let remaining = u.need;
+        for (const s of surplusLeft) {
+            if (s.avail < 0.01 || remaining < 0.01) continue;
+            const move = Math.min(s.avail, remaining);
+            newMoves.push({ month: curMonth, from: s.name, to: u.name, amount: parseFloat(move.toFixed(2)), note: 'smart rebalance' });
+            s.avail -= move;
+            remaining -= move;
+            if (remaining < 0.01) break;
+        }
+    }
+
+    if (!newMoves.length) return;
+    transferQueue.push(...newMoves);
+    if (whatifMode) applyWhatifDeltas();
+    renderQueue();
+    if (whatifMode) render();
+
+    // Scroll to footer
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+
+function toggleUncatDetail() {
+    const d = document.getElementById('uncatDetail');
+    d.style.display = d.style.display === 'block' ? 'none' : 'block';
+}
+
+// ── Transfer queue ──
+function addToQueue() {
+    const f = document.getElementById('fromCat').value;
+    const t = document.getElementById('toCat').value;
+    const a = parseFloat(document.getElementById('amt').value);
+    const n = document.getElementById('note').value.trim();
+    if (!f || !t || !a || f === t) return;
+    transferQueue.push({ month: curMonth, from: f, to: t, amount: a, note: n || 'rebalance' });
+    document.getElementById('amt').value = '';
+    document.getElementById('note').value = '';
+    if (whatifMode) { applyWhatifDeltas(); render(); }
+    renderQueue();
+}
+
+function removeFromQueue(idx) {
+    transferQueue.splice(idx, 1);
+    if (whatifMode) { applyWhatifDeltas(); render(); }
+    renderQueue();
+}
+
+function renderQueue() {
+    const list   = document.getElementById('queueList');
+    const badge  = document.getElementById('queueCount');
+    const copyBtn = document.getElementById('copyAllBtn');
+    badge.textContent = transferQueue.length;
+    badge.style.display = transferQueue.length ? 'inline' : 'none';
+    copyBtn.disabled = transferQueue.length === 0;
+
+    if (transferQueue.length === 0) {
+        list.innerHTML = '<div style="font-size:11px;color:var(--muted);padding:8px 0 10px;">Queue is empty — add transfers above.</div>';
+    } else {
+        list.innerHTML = transferQueue.map((r, i) => `
+            <div class="queue-item">
+                <button class="queue-item-remove" onclick="removeFromQueue(${i})">&#215;</button>
+                <span style="color:var(--muted)">${r.month}</span>
+                <span style="color:var(--rose)">${r.from}</span>
+                <span style="color:var(--muted)">&#8594;</span>
+                <span style="color:var(--sage)">${r.to}</span>
+                <span style="color:var(--green)">$${r.amount.toFixed(2)}</span>
+                <span style="color:var(--muted);font-size:10px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.note}</span>
+            </div>`).join('');
+        if (!queueOpen) {
+            queueOpen = true;
+            list.style.display = 'block';
+            document.getElementById('queueHint').textContent = '&#9660; hide queue';
+        }
+    }
+}
+
+function toggleQueue() {
+    queueOpen = !queueOpen;
+    document.getElementById('queueList').style.display = queueOpen ? 'block' : 'none';
+    document.getElementById('queueHint').innerHTML = queueOpen ? '&#9660; hide queue' : '&#9650; show queue';
+}
+
+function copyQueue() {
+    if (!transferQueue.length) return;
+    const csv = transferQueue
+        .map(r => `${r.month},"${r.from}","${r.to}",${r.amount.toFixed(2)},"${r.note}"`)
+        .join('\n');
+    navigator.clipboard.writeText(csv).then(() => {
+        const btn = document.getElementById('copyAllBtn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy All'; }, 1600);
+    });
+}
+
+// ── Export ──
+function openExport() {
+    const m = DB.data_by_month[curMonth];
+    document.getElementById('exportMonthLabel').textContent = curMonth;
+    let csv = 'Envelope,Spent,Budgeted,Available\n';
+    for (const group in m.categories) {
+        csv += `"-- ${group} --",,,\n`;
+        m.categories[group].forEach(cat => {
+            csv += `"${cat.name}",${cat.spent.toFixed(2)},${cat.budgeted.toFixed(2)},${cat.available.toFixed(2)}\n`;
+        });
+    }
+    csv += `\nSummary,,\n`;
+    csv += `Operating Margin,,${m.summary.net_health.toFixed(2)}\n`;
+    csv += `Deployed Capital,,${m.summary.excess.toFixed(2)}\n`;
+    csv += `Shortfall,,${m.summary.holes.toFixed(2)}\n`;
+    csv += `Total Enveloped,,${m.summary.total_enveloped.toFixed(2)}\n`;
+    document.getElementById('exportText').value = csv;
+    document.getElementById('exportModal').classList.add('open');
+}
+
+function closeExport() {
+    document.getElementById('exportModal').classList.remove('open');
+}
+
+function copyExport() {
+    navigator.clipboard.writeText(document.getElementById('exportText').value).then(() => {
+        const btn = document.getElementById('modalCopyBtn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy to Clipboard'; }, 1500);
+    });
+}
+
+document.getElementById('exportModal').addEventListener('click', function(e) {
+    if (e.target === this) closeExport();
+});
+
+render();
+renderQueue();
+</script>
+</body>
+</html>

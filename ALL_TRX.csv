@@ -1,0 +1,177 @@
+Posted Date,Authorized Date,Amount,Status,Description,Detailed Category,Primary Category
+2025-11-01,2025-11-01,2622.50,Posted,Direct Deposit - Acme Corp,Wages,Wages
+2025-11-15,2025-11-15,2622.50,Posted,Direct Deposit - Acme Corp,Wages,Wages
+2025-11-03,2025-11-03,18.40,Posted,Venmo cashback,Other,Other
+2025-11-01,2025-11-01,-1650.00,Posted,ACH - Oakwood Properties,Rent,Housing
+2025-11-05,2025-11-05,-62.18,Posted,Trader Joe's,Groceries,Food
+2025-11-10,2025-11-10,-88.43,Posted,Whole Foods Market,Groceries,Food
+2025-11-17,2025-11-17,-71.22,Posted,Trader Joe's,Groceries,Food
+2025-11-24,2025-11-24,-54.91,Posted,Target - Grocery,Groceries,Food
+2025-11-06,2025-11-06,-13.47,Posted,Chipotle,Restaurants & bars,Food
+2025-11-08,2025-11-08,-48.20,Posted,The Well Bar & Grill,Restaurants & bars,Food
+2025-11-13,2025-11-13,-16.80,Posted,Sweetgreen,Restaurants & bars,Food
+2025-11-19,2025-11-19,-32.15,Posted,Uber Eats,Restaurants & bars,Food
+2025-11-22,2025-11-22,-74.50,Posted,Nobu - birthday dinner,Restaurants & bars,Food
+2025-11-28,2025-11-28,-22.40,Posted,Pizza Hut,Restaurants & bars,Food
+2025-11-04,2025-11-04,-6.85,Posted,Starbucks,Coffee shops,Food
+2025-11-07,2025-11-07,-7.40,Posted,Blue Bottle Coffee,Coffee shops,Food
+2025-11-11,2025-11-11,-6.85,Posted,Starbucks,Coffee shops,Food
+2025-11-14,2025-11-14,-8.20,Posted,Equator Coffees,Coffee shops,Food
+2025-11-18,2025-11-18,-6.85,Posted,Starbucks,Coffee shops,Food
+2025-11-25,2025-11-25,-7.40,Posted,Blue Bottle Coffee,Coffee shops,Food
+2025-11-09,2025-11-09,-48.20,Posted,Shell Gas Station,Gas & EV charging,Auto
+2025-11-21,2025-11-21,-34.80,Posted,Chevron,Gas & EV charging,Auto
+2025-11-02,2025-11-02,-95.00,Posted,T-Mobile AutoPay,Phone & internet,Bills
+2025-11-10,2025-11-10,-380.00,Posted,FedLoan Servicing,Student loan payments,Bills
+2025-11-15,2025-11-15,-400.00,Posted,Fidelity Transfer,Investment transfers,Transfers
+2025-11-01,2025-11-01,-24.99,Posted,Planet Fitness,Fitness,Health
+2025-11-08,2025-11-08,-29.00,Posted,ClassPass,Fitness,Health
+2025-11-20,2025-11-20,-18.40,Posted,CVS Pharmacy,Medical,Health
+2025-11-12,2025-11-12,-54.30,Posted,Ulta Beauty,Personal care,Personal
+2025-11-22,2025-11-22,-25.00,Posted,Drybar,Personal care,Personal
+2025-11-16,2025-11-16,-89.95,Posted,Zara,Clothing & accessories,Shopping
+2025-11-29,2025-11-29,-54.40,Posted,ASOS,Clothing & accessories,Shopping
+2025-11-11,2025-11-11,-34.99,Posted,Amazon,Retail,Shopping
+2025-11-23,2025-11-23,-28.14,Posted,Target,Retail,Shopping
+2025-11-15,2025-11-15,-35.00,Posted,Eventbrite - Comedy Show,Events & recreation,Entertainment
+2025-11-27,2025-11-27,-18.50,Posted,AMC Theaters,Events & recreation,Entertainment
+2025-11-01,2025-11-01,-10.99,Posted,Spotify Premium,Music & audio,Entertainment
+2025-11-03,2025-11-03,-15.49,Posted,Netflix,Other entertainment,Entertainment
+2025-11-10,2025-11-10,-15.99,Posted,HBO Max,Other entertainment,Entertainment
+2025-11-20,2025-11-20,-14.99,Posted,Steam Purchase,Games,Entertainment
+2025-11-08,2025-11-08,-64.18,Posted,Chewy.com,Pet supplies,Personal
+2025-11-19,2025-11-19,-22.40,Posted,Petco,Pet supplies,Personal
+2025-11-01,2025-11-01,-142.00,Posted,Progressive AutoPay,Auto insurance,Bills
+2025-11-14,2025-11-14,-38.20,Posted,Vitamins - iHerb,Other food & drink,Food
+2025-11-28,2025-11-28,-1200.00,Posted,Chase Sapphire Payment,Credit card payments,Transfers
+2025-12-01,2025-12-01,2622.50,Posted,Direct Deposit - Acme Corp,Wages,Wages
+2025-12-15,2025-12-15,2622.50,Posted,Direct Deposit - Acme Corp,Wages,Wages
+2025-12-20,2025-12-20,42.00,Posted,Marketplace sale - Poshmark,Other,Other
+2025-12-01,2025-12-01,-1650.00,Posted,ACH - Oakwood Properties,Rent,Housing
+2025-12-03,2025-12-03,-74.18,Posted,Trader Joe's,Groceries,Food
+2025-12-10,2025-12-10,-92.44,Posted,Whole Foods Market,Groceries,Food
+2025-12-17,2025-12-17,-58.32,Posted,Trader Joe's,Groceries,Food
+2025-12-23,2025-12-23,-88.15,Posted,Safeway - Holiday items,Groceries,Food
+2025-12-05,2025-12-05,-62.40,Posted,Cheesecake Factory,Restaurants & bars,Food
+2025-12-07,2025-12-07,-16.80,Posted,Sweetgreen,Restaurants & bars,Food
+2025-12-12,2025-12-12,-55.20,Posted,The Well Bar & Grill,Restaurants & bars,Food
+2025-12-14,2025-12-14,-28.45,Posted,Uber Eats,Restaurants & bars,Food
+2025-12-20,2025-12-20,-45.00,Posted,Holiday party venue split,Restaurants & bars,Food
+2025-12-26,2025-12-26,-34.20,Posted,Postmates,Restaurants & bars,Food
+2025-12-30,2025-12-30,-88.00,Posted,New Year's Eve dinner,Restaurants & bars,Food
+2025-12-02,2025-12-02,-6.85,Posted,Starbucks,Coffee shops,Food
+2025-12-09,2025-12-09,-7.40,Posted,Blue Bottle Coffee,Coffee shops,Food
+2025-12-16,2025-12-16,-6.85,Posted,Starbucks,Coffee shops,Food
+2025-12-23,2025-12-23,-8.60,Posted,Philz Coffee,Coffee shops,Food
+2025-12-06,2025-12-06,-52.40,Posted,Shell Gas Station,Gas & EV charging,Auto
+2025-12-19,2025-12-19,-38.20,Posted,Chevron,Gas & EV charging,Auto
+2025-12-02,2025-12-02,-95.00,Posted,T-Mobile AutoPay,Phone & internet,Bills
+2025-12-10,2025-12-10,-380.00,Posted,FedLoan Servicing,Student loan payments,Bills
+2025-12-15,2025-12-15,-400.00,Posted,Fidelity Transfer,Investment transfers,Transfers
+2025-12-01,2025-12-01,-24.99,Posted,Planet Fitness,Fitness,Health
+2025-12-08,2025-12-08,-29.00,Posted,ClassPass,Fitness,Health
+2025-12-15,2025-12-15,-22.80,Posted,Walgreens Pharmacy,Medical,Health
+2025-12-05,2025-12-05,-78.40,Posted,Sephora,Personal care,Personal
+2025-12-18,2025-12-18,-35.00,Posted,Drybar - Holiday blowout,Personal care,Personal
+2025-12-06,2025-12-06,-142.80,Posted,Nordstrom,Clothing & accessories,Shopping
+2025-12-13,2025-12-13,-68.50,Posted,ASOS,Clothing & accessories,Shopping
+2025-12-21,2025-12-21,-94.95,Posted,Zara - holiday outfit,Clothing & accessories,Shopping
+2025-12-08,2025-12-08,-122.48,Posted,Amazon - gifts,Retail,Shopping
+2025-12-15,2025-12-15,-88.32,Posted,Target - gifts,Retail,Shopping
+2025-12-20,2025-12-20,-44.00,Posted,Etsy - gift,Retail,Shopping
+2025-12-06,2025-12-06,-95.00,Posted,Nutcracker Ballet tickets,Events & recreation,Entertainment
+2025-12-13,2025-12-13,-18.50,Posted,AMC Theaters,Events & recreation,Entertainment
+2025-12-22,2025-12-22,-28.00,Posted,Holiday ice skating,Events & recreation,Entertainment
+2025-12-01,2025-12-01,-10.99,Posted,Spotify Premium,Music & audio,Entertainment
+2025-12-03,2025-12-03,-15.49,Posted,Netflix,Other entertainment,Entertainment
+2025-12-10,2025-12-10,-15.99,Posted,HBO Max,Other entertainment,Entertainment
+2025-12-18,2025-12-18,-13.99,Posted,Disney+,Other entertainment,Entertainment
+2025-12-26,2025-12-26,-14.99,Posted,Steam - holiday sale,Games,Entertainment
+2025-12-07,2025-12-07,-72.40,Posted,Chewy.com,Pet supplies,Personal
+2025-12-18,2025-12-18,-18.20,Posted,Petco - holiday treat,Pet supplies,Personal
+2025-12-01,2025-12-01,-142.00,Posted,Progressive AutoPay,Auto insurance,Bills
+2025-12-22,2025-12-22,-248.00,Posted,Southwest Airlines,Other travel,Travel
+2025-12-23,2025-12-23,-180.00,Posted,Airbnb - family stay,Other travel,Travel
+2025-12-10,2025-12-10,-38.20,Posted,iHerb vitamins,Other food & drink,Food
+2025-12-28,2025-12-28,-1400.00,Posted,Chase Sapphire Payment,Credit card payments,Transfers
+2026-01-01,2026-01-01,2622.50,Posted,Direct Deposit - Acme Corp,Wages,Wages
+2026-01-15,2026-01-15,2622.50,Posted,Direct Deposit - Acme Corp,Wages,Wages
+2026-01-08,2026-01-08,380.00,Posted,Tax refund deposit,Other,Other
+2026-01-01,2026-01-01,-1650.00,Posted,ACH - Oakwood Properties,Rent,Housing
+2026-01-04,2026-01-04,-68.22,Posted,Trader Joe's,Groceries,Food
+2026-01-11,2026-01-11,-82.18,Posted,Whole Foods Market,Groceries,Food
+2026-01-18,2026-01-18,-74.55,Posted,Trader Joe's,Groceries,Food
+2026-01-25,2026-01-25,-58.90,Posted,Safeway,Groceries,Food
+2026-01-06,2026-01-06,-13.47,Posted,Chipotle,Restaurants & bars,Food
+2026-01-10,2026-01-10,-16.80,Posted,Sweetgreen,Restaurants & bars,Food
+2026-01-15,2026-01-15,-42.20,Posted,The Well Bar & Grill,Restaurants & bars,Food
+2026-01-20,2026-01-20,-28.90,Posted,Uber Eats,Restaurants & bars,Food
+2026-01-26,2026-01-26,-58.40,Posted,Nobu,Restaurants & bars,Food
+2026-01-05,2026-01-05,-6.85,Posted,Starbucks,Coffee shops,Food
+2026-01-08,2026-01-08,-7.40,Posted,Blue Bottle Coffee,Coffee shops,Food
+2026-01-13,2026-01-13,-6.85,Posted,Starbucks,Coffee shops,Food
+2026-01-19,2026-01-19,-8.20,Posted,Equator Coffees,Coffee shops,Food
+2026-01-24,2026-01-24,-6.85,Posted,Starbucks,Coffee shops,Food
+2026-01-29,2026-01-29,-7.40,Posted,Blue Bottle Coffee,Coffee shops,Food
+2026-01-07,2026-01-07,-44.80,Posted,Shell Gas Station,Gas & EV charging,Auto
+2026-01-21,2026-01-21,-36.20,Posted,Chevron,Gas & EV charging,Auto
+2026-01-02,2026-01-02,-95.00,Posted,T-Mobile AutoPay,Phone & internet,Bills
+2026-01-10,2026-01-10,-380.00,Posted,FedLoan Servicing,Student loan payments,Bills
+2026-01-15,2026-01-15,-400.00,Posted,Fidelity Transfer,Investment transfers,Transfers
+2026-01-01,2026-01-01,-24.99,Posted,Planet Fitness,Fitness,Health
+2026-01-08,2026-01-08,-29.00,Posted,ClassPass,Fitness,Health
+2026-01-12,2026-01-12,-40.00,Posted,Dr. Chen - copay,Medical,Health
+2026-01-18,2026-01-18,-62.40,Posted,CVS Pharmacy,Medical,Health
+2026-01-22,2026-01-22,-85.00,Posted,LabCorp - bloodwork,Medical,Health
+2026-01-10,2026-01-10,-48.20,Posted,Ulta Beauty,Personal care,Personal
+2026-01-24,2026-01-24,-25.00,Posted,Drybar,Personal care,Personal
+2026-01-17,2026-01-17,-62.40,Posted,ASOS - sale,Clothing & accessories,Shopping
+2026-01-09,2026-01-09,-44.18,Posted,Amazon,Retail,Shopping
+2026-01-20,2026-01-20,-32.80,Posted,Target,Retail,Shopping
+2026-01-14,2026-01-14,-45.00,Posted,Comedy show tickets,Events & recreation,Entertainment
+2026-01-24,2026-01-24,-18.50,Posted,AMC Theaters,Events & recreation,Entertainment
+2026-01-01,2026-01-01,-10.99,Posted,Spotify Premium,Music & audio,Entertainment
+2026-01-03,2026-01-03,-15.49,Posted,Netflix,Other entertainment,Entertainment
+2026-01-10,2026-01-10,-15.99,Posted,HBO Max,Other entertainment,Entertainment
+2026-01-15,2026-01-15,-14.99,Posted,Nintendo eShop,Games,Entertainment
+2026-01-06,2026-01-06,-68.40,Posted,Chewy.com,Pet supplies,Personal
+2026-01-20,2026-01-20,-185.00,Posted,Vet visit - wellness,Pet supplies,Personal
+2026-01-01,2026-01-01,-142.00,Posted,Progressive AutoPay,Auto insurance,Bills
+2026-01-13,2026-01-13,-38.20,Posted,iHerb vitamins,Other food & drink,Food
+2026-01-28,2026-01-28,-1100.00,Posted,Chase Sapphire Payment,Credit card payments,Transfers
+2026-02-01,2026-02-01,2622.47,Posted,Direct Deposit - Acme Corp,Wages,Wages
+2026-02-15,2026-02-15,2622.50,Posted,Direct Deposit - Acme Corp,Wages,Wages
+2026-02-10,2026-02-10,55.00,Posted,Venmo - friend repayment,Other,Other
+2026-02-01,2026-02-01,-1650.00,Posted,ACH - Oakwood Properties,Rent,Housing
+2026-02-03,2026-02-03,-71.88,Posted,Trader Joe's,Groceries,Food
+2026-02-10,2026-02-10,-84.22,Posted,Whole Foods Market,Groceries,Food
+2026-02-17,2026-02-17,-66.40,Posted,Trader Joe's,Groceries,Food
+2026-02-04,2026-02-04,-13.47,Posted,Chipotle,Restaurants & bars,Food
+2026-02-07,2026-02-07,-92.40,Posted,Valentine's dinner,Restaurants & bars,Food
+2026-02-12,2026-02-12,-16.80,Posted,Sweetgreen,Restaurants & bars,Food
+2026-02-16,2026-02-16,-31.20,Posted,Uber Eats,Restaurants & bars,Food
+2026-02-19,2026-02-19,-44.80,Posted,The Well Bar & Grill,Restaurants & bars,Food
+2026-02-03,2026-02-03,-6.85,Posted,Starbucks,Coffee shops,Food
+2026-02-06,2026-02-06,-7.40,Posted,Blue Bottle Coffee,Coffee shops,Food
+2026-02-11,2026-02-11,-6.85,Posted,Starbucks,Coffee shops,Food
+2026-02-18,2026-02-18,-8.20,Posted,Equator Coffees,Coffee shops,Food
+2026-02-08,2026-02-08,-46.40,Posted,Shell Gas Station,Gas & EV charging,Auto
+2026-02-02,2026-02-02,-95.00,Posted,T-Mobile AutoPay,Phone & internet,Bills
+2026-02-10,2026-02-10,-380.00,Posted,FedLoan Servicing,Student loan payments,Bills
+2026-02-15,2026-02-15,-400.00,Posted,Fidelity Transfer,Investment transfers,Transfers
+2026-02-01,2026-02-01,-24.99,Posted,Planet Fitness,Fitness,Health
+2026-02-08,2026-02-08,-29.00,Posted,ClassPass,Fitness,Health
+2026-02-14,2026-02-14,-22.40,Posted,CVS Pharmacy,Medical,Health
+2026-02-08,2026-02-08,-52.18,Posted,Ulta Beauty,Personal care,Personal
+2026-02-13,2026-02-13,-88.00,Posted,Reformation - Valentine's sale,Clothing & accessories,Shopping
+2026-02-05,2026-02-05,-28.99,Posted,Amazon,Retail,Shopping
+2026-02-08,2026-02-08,-32.00,Posted,Museum of Modern Art tickets,Events & recreation,Entertainment
+2026-02-15,2026-02-15,-28.00,Posted,Eventbrite - Jazz night,Events & recreation,Entertainment
+2026-02-01,2026-02-01,-10.99,Posted,Spotify Premium,Music & audio,Entertainment
+2026-02-03,2026-02-03,-15.49,Posted,Netflix,Other entertainment,Entertainment
+2026-02-10,2026-02-10,-15.99,Posted,HBO Max,Other entertainment,Entertainment
+2026-02-12,2026-02-12,-9.99,Posted,Steam Purchase,Games,Entertainment
+2026-02-06,2026-02-06,-72.18,Posted,Chewy.com,Pet supplies,Personal
+2026-02-01,2026-02-01,-142.00,Posted,Progressive AutoPay,Auto insurance,Bills
+2026-02-09,2026-02-09,-38.20,Posted,iHerb vitamins,Other food & drink,Food
+2026-02-20,2026-02-20,-980.00,Posted,Chase Sapphire Payment,Credit card payments,Transfers
